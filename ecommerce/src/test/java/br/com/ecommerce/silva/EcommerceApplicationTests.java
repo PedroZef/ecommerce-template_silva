@@ -1,4 +1,4 @@
-package br.com.ecommerce.ecommerce;
+package br.com.ecommerce.silva;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

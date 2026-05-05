@@ -1,0 +1,6 @@
+{
+    "powerquery.client.additionalSymbolsDirectories": [
+        "d:/FAT 2025/Terceiro Semestre 2026/Arquitetura de sistemas (2025)/projetos/ecommerce-template_silva/.vscode/excel-pq-symbols"
+    ],
+    "java.compile.nullAnalysis.mode": "automatic"
+}
