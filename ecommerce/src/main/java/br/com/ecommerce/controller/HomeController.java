@@ -1,4 +1,4 @@
-package br.com.ecommerce.silva.controller;
+package br.com.ecommerce.controller;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
