@@ -7,6 +7,7 @@
         <title th:text="${title} + ' | E-Commerce Premium'"></title>
         <!-- Folha de Estilo Customizada -->
         <link rel="stylesheet" th:href="@{/css/style.css}" />
+        <link rel="stylesheet" th:href="@{/css/footer.css}" />
     </head>
 
     <body>
@@ -170,8 +171,15 @@
 
             <!-- Área de Conteúdo Principal Dinâmica -->
             <main class="main-content">
-                <!-- Insere o corpo do conteúdo da página filha -->
-                <div th:replace="${contentBody}"></div>
+                <div class="content-wrapper">
+                    <!-- Insere o corpo do conteúdo da página filha -->
+                    <div th:replace="${contentBody}"></div>
+                </div>
+
+                <!-- Footer Global -->
+                <footer class="main-footer">
+                    <p>&copy; 2026 E-Commerce_T3 - Sprint MVC - Pedro Zeferino da Silva.</p>
+                </footer>
             </main>
         </div>
     </body>

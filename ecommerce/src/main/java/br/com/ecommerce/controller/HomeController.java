@@ -12,4 +12,9 @@ public class HomeController {
         model.addAttribute("message", "Bem-vindo ao E-commerce!");
         return "dashboard";
     }
+
+    @GetMapping("/login")
+    public String login() {
+        return "login";
+    }
 }
