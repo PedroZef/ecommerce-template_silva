@@ -2,19 +2,23 @@ package br.com.ecommerce.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import br.com.ecommerce.model.Categoria;
 import br.com.ecommerce.model.Cliente;
 import br.com.ecommerce.model.Produto;
+import br.com.ecommerce.model.Usuario;
 import br.com.ecommerce.repository.CategoriaRepository;
 import br.com.ecommerce.repository.ClienteRepository;
 import br.com.ecommerce.repository.ProdutoRepository;
+import br.com.ecommerce.repository.UsuarioRepository;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
 
 @Component
+
 public class DataLoader implements CommandLineRunner {
 
     @Autowired
@@ -26,8 +30,30 @@ public class DataLoader implements CommandLineRunner {
     @Autowired
     private ClienteRepository clienteRepository;
 
+    @Autowired
+    private UsuarioRepository usuarioRepository1;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     @Override
     public void run(String... args) throws Exception {
+        // Criar usuários do sistema se não existirem
+        if (usuarioRepository1.count() == 0) {
+            Usuario admin = new Usuario();
+            admin.setEmail("admin@admin.com");
+            admin.setSenha(passwordEncoder.encode("admin123"));
+            admin.setRole("ROLE_ADMIN");
+
+            Usuario cliente = new Usuario();
+            cliente.setEmail("cliente@cliente.com");
+            cliente.setSenha(passwordEncoder.encode("cliente123"));
+            cliente.setRole("ROLE_USER");
+
+            usuarioRepository1.saveAll(Arrays.asList(admin, cliente));
+            System.out.println("====== USUÁRIOS DE EXEMPLO CRIADOS ======");
+        }
+
         if (categoriaRepository.count() == 0) {
             System.out.println("====== POPULANDO BANCO DE DADOS COM DADOS DE EXEMPLO ======");
 
