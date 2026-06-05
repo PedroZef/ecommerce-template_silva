@@ -31,7 +31,7 @@ public class DataLoader implements CommandLineRunner {
     private ClienteRepository clienteRepository;
 
     @Autowired
-    private UsuarioRepository usuarioRepository1;
+    private UsuarioRepository usuarioRepository;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -39,7 +39,7 @@ public class DataLoader implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         // Criar usuários do sistema se não existirem
-        if (usuarioRepository1.count() == 0) {
+        if (usuarioRepository.count() == 0) {
             Usuario admin = new Usuario();
             admin.setEmail("admin@admin.com");
             admin.setSenha(passwordEncoder.encode("admin123"));
@@ -50,7 +50,7 @@ public class DataLoader implements CommandLineRunner {
             cliente.setSenha(passwordEncoder.encode("cliente123"));
             cliente.setRole("ROLE_USER");
 
-            usuarioRepository1.saveAll(Arrays.asList(admin, cliente));
+            usuarioRepository.saveAll(Arrays.asList(admin, cliente));
             System.out.println("====== USUÁRIOS DE EXEMPLO CRIADOS ======");
         }
 

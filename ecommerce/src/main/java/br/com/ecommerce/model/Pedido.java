@@ -49,7 +49,7 @@ public class Pedido {
 
     public void recalcularTotal() {
         this.total = itens.stream()
-                .map(item -> item.getPrecoUnitario().multiply(BigDecimal.valueOf(item.getQuantidade())))
+                .map(ItemPedido::getSubtotal)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
     

@@ -9,9 +9,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 public class HomeController {
 
     @GetMapping("/home")
-    public String index(Model model) {
-        model.addAttribute("message", "Bem-vindo ao E-commerce!");
-        return "dashboard";
+    public String index() {
+        return "redirect:/";
     }
 
     @GetMapping("/login")
