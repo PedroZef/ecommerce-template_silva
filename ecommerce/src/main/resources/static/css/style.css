@@ -7,10 +7,12 @@
 :root {
     --bg-main: #030303;
     --bg-panel: rgba(20, 22, 30, 0.65);
+    --bg-sidebar: rgba(15, 16, 22, 0.85);
     --border-glass: rgba(255, 255, 255, 0.08);
     --bg-login: #292626;
     --text-primary: #f5f6fa;
     --text-secondary: #a0a5c0;
+    --text-heading-brand: #ffffff;
     --primary: #6366f1;
     /* Roxo Indigo */
     --primary-glow: rgba(99, 102, 241, 0.3);
@@ -20,11 +22,36 @@
     --success: #10b981;
     /* Verde esmeralda */
     --success-glow: rgba(16, 185, 129, 0.2);
+    --success-text: #34d399;
     --danger: #ef4444;
     /* Vermelho rubi */
     --danger-glow: rgba(239, 68, 68, 0.25);
+    --danger-text: #f87171;
     --warning: #f59e0b;
     /* Ambar */
+    
+    /* Variables for theme adjustments */
+    --nav-hover-bg: rgba(255, 255, 255, 0.03);
+    --nav-hover-border: rgba(255, 255, 255, 0.05);
+    --nav-hover-color: #ffffff;
+    
+    --nav-active-bg: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(0, 242, 254, 0.05));
+    --nav-active-border: rgba(99, 102, 241, 0.25);
+    --nav-active-color: #ffffff;
+    
+    --metric-value-color: #ffffff;
+    --form-header-color: #ffffff;
+    --form-input-bg: rgba(0, 0, 0, 0.25);
+    --form-input-bg-focus: rgba(0, 0, 0, 0.35);
+    --form-input-color: #ffffff;
+    
+    --checkout-card-bg: rgba(0, 0, 0, 0.2);
+    --checkout-card-bg-hover: rgba(0, 0, 0, 0.25);
+    --checkout-title-color: #ffffff;
+    
+    --scrollbar-thumb: rgba(255, 255, 255, 0.1);
+    --scrollbar-thumb-hover: var(--primary);
+
     --font-heading: 'Outfit', sans-serif;
     --font-body: 'Plus Jakarta Sans', sans-serif;
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -61,7 +88,7 @@ body {
 /* Sidebar Estilo Glassmorphism */
 .sidebar {
     width: 280px;
-    background: rgba(15, 16, 22, 0.85);
+    background: var(--bg-sidebar);
     backdrop-filter: blur(20px);
     border-right: 1px solid var(--border-glass);
     padding: 2rem 1.5rem;
@@ -70,7 +97,61 @@ body {
     position: fixed;
     height: 100vh;
     z-index: 100;
+    transition: var(--transition-smooth);
 }
+
+/* ==========================================================================
+   Tema Claro (Light Theme)
+   ========================================================================== */
+.light-theme {
+    --bg-main: #f5f7fa;
+    --bg-panel: rgba(255, 255, 255, 0.85);
+    --bg-sidebar: rgba(255, 255, 255, 0.75);
+    --border-glass: rgba(0, 0, 0, 0.08);
+    --bg-login: #ffffff;
+    --text-primary: #0f172a;
+    --text-secondary: #334155;
+    --text-heading-brand: #0f172a;
+    --primary: #4f46e5;
+    --primary-glow: rgba(79, 70, 229, 0.2);
+    --accent: #0ea5e9;
+    --accent-glow: rgba(14, 165, 233, 0.2);
+    --success-text: #065f46;
+    --danger-text: #991b1b;
+    
+    --nav-hover-bg: rgba(79, 70, 229, 0.05);
+    --nav-hover-border: rgba(79, 70, 229, 0.15);
+    --nav-hover-color: var(--primary);
+    
+    --nav-active-bg: linear-gradient(135deg, rgba(79, 70, 229, 0.1), rgba(14, 165, 233, 0.05));
+    --nav-active-border: rgba(79, 70, 229, 0.25);
+    --nav-active-color: var(--primary);
+    
+    --metric-value-color: #0f172a;
+    --form-header-color: #0f172a;
+    --form-input-bg: rgba(255, 255, 255, 0.8);
+    --form-input-bg-focus: #ffffff;
+    --form-input-color: #0f172a;
+    
+    --checkout-card-bg: rgba(255, 255, 255, 0.5);
+    --checkout-card-bg-hover: rgba(255, 255, 255, 0.8);
+    --checkout-title-color: #1e293b;
+    
+    --scrollbar-thumb: rgba(0, 0, 0, 0.15);
+}
+
+/* 
+  Como a classe será aplicada no container (dentro do body), 
+  usamos o seletor :has para também mudar a cor de fundo do Body inteiro 
+*/
+body:has(.light-theme) {
+    background-color: var(--bg-main);
+    color: var(--text-primary);
+    background-image:
+        radial-gradient(at 0% 0%, rgba(79, 70, 229, 0.1) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(14, 165, 233, 0.05) 0px, transparent 50%);
+}
+
 
 .brand {
     display: flex;
@@ -101,10 +182,11 @@ body {
     font-size: 1.5rem;
     font-weight: 700;
     letter-spacing: -0.5px;
-    background: linear-gradient(to right, #ffffff, var(--text-secondary));
+    background: linear-gradient(to right, var(--text-heading-brand), var(--text-secondary));
     background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
+    transition: var(--transition-smooth);
 }
 
 .nav-menu {
@@ -129,16 +211,16 @@ body {
 }
 
 .nav-item a:hover {
-    color: white;
-    background: rgba(255, 255, 255, 0.03);
-    border-color: rgba(255, 255, 255, 0.05);
+    color: var(--nav-hover-color);
+    background: var(--nav-hover-bg);
+    border-color: var(--nav-hover-border);
 }
 
 .nav-item.active a {
-    color: white;
-    background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(0, 242, 254, 0.05));
-    border-color: rgba(99, 102, 241, 0.25);
-    box-shadow: inset 0 0 8px rgba(99, 102, 241, 0.1);
+    color: var(--nav-active-color);
+    background: var(--nav-active-bg);
+    border-color: var(--nav-active-border);
+    box-shadow: inset 0 0 8px var(--primary-glow);
 }
 
 .nav-item.active a svg {
@@ -258,7 +340,8 @@ body {
     font-family: var(--font-heading);
     font-size: 1.75rem;
     font-weight: 700;
-    color: white;
+    color: var(--metric-value-color);
+    transition: var(--transition-smooth);
 }
 
 /* ==========================================================================
@@ -361,12 +444,13 @@ body {
     font-size: 1.25rem;
     font-weight: 600;
     margin-bottom: 1.5rem;
-    color: white;
+    color: var(--form-header-color);
     border-bottom: 1px solid var(--border-glass);
     padding-bottom: 0.75rem;
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    transition: var(--transition-smooth);
 }
 
 .form-group {
@@ -386,11 +470,11 @@ body {
 .form-textarea {
     align-self: center;
     width: 100%;
-    background: rgba(0, 0, 0, 0.25);
+    background: var(--form-input-bg);
     border: 1px solid var(--border-glass);
     border-radius: 10px;
     padding: 0.75rem 1rem;
-    color: white;
+    color: var(--form-input-color);
     font-family: var(--font-body);
     font-size: 0.95rem;
     outline: none;
@@ -402,7 +486,7 @@ body {
 .form-textarea:focus {
     border-color: var(--primary);
     box-shadow: 0 0 10px rgba(99, 102, 241, 0.2);
-    background: rgba(0, 0, 0, 0.35);
+    background: var(--form-input-bg-focus);
 }
 
 .form-textarea {
@@ -495,14 +579,18 @@ body {
 
 .alert-success {
     background: rgba(16, 185, 129, 0.1);
-    color: #34d399;
+    color: var(--success-text);
     border: 1px solid rgba(16, 185, 129, 0.2);
 }
 
 .alert-danger {
     background: rgba(239, 68, 68, 0.1);
-    color: #f87171;
+    color: var(--danger-text);
     border: 1px solid rgba(239, 68, 68, 0.25);
+}
+
+.text-muted {
+    color: var(--text-secondary) !important;
 }
 
 /* Alerta especial ACID (Rollback/Commit explicativos nas aulas) */
@@ -566,7 +654,7 @@ body {
 }
 
 .checkout-product-card {
-    background: rgba(0, 0, 0, 0.2);
+    background: var(--checkout-card-bg);
     border: 1px solid var(--border-glass);
     border-radius: 12px;
     padding: 1rem 1.25rem;
@@ -578,14 +666,15 @@ body {
 
 .checkout-product-card:hover {
     border-color: rgba(255, 255, 255, 0.15);
-    background: rgba(0, 0, 0, 0.25);
+    background: var(--checkout-card-bg-hover);
 }
 
 .checkout-product-info h4 {
     font-size: 0.95rem;
     font-weight: 600;
-    color: white;
+    color: var(--checkout-title-color);
     margin-bottom: 0.2rem;
+    transition: var(--transition-smooth);
 }
 
 .checkout-product-info p {
@@ -701,10 +790,121 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.1);
+    background: var(--scrollbar-thumb);
     border-radius: 99px;
+    transition: var(--transition-smooth);
 }
 
 ::-webkit-scrollbar-thumb:hover {
+    background: var(--scrollbar-thumb-hover);
+}
+
+/* ==========================================================================
+   Botão de Alternância de Tema (Sem JavaScript)
+   ========================================================================== */
+.theme-toggle-container {
+    margin-top: auto;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-glass);
+}
+
+.theme-toggle-btn {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border-glass);
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    cursor: pointer;
+    color: var(--text-secondary);
+    font-family: var(--font-body);
+    font-weight: 500;
+    font-size: 0.95rem;
+    transition: var(--transition-smooth);
+}
+
+.theme-toggle-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text-primary);
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+/* Estrutura do Switch */
+.theme-toggle-track {
+    width: 48px;
+    height: 24px;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 99px;
+    padding: 2px;
+    position: relative;
+    transition: var(--transition-smooth);
+    border: 1px solid var(--border-glass);
+    flex-shrink: 0;
+}
+
+.theme-toggle-thumb {
+    width: 18px;
+    height: 18px;
+    background: var(--accent);
+    border-radius: 50%;
+    position: absolute;
+    left: 3px;
+    top: 2px;
+    transition: var(--transition-smooth);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 8px var(--accent-glow);
+}
+
+/* Ícones de Sol e Lua */
+.theme-toggle-thumb svg {
+    width: 12px;
+    height: 12px;
+    stroke: #030303;
+    transition: var(--transition-smooth);
+}
+
+.sun-icon {
+    display: none;
+}
+
+.moon-icon {
+    display: block;
+}
+
+/* Estilização quando a classe .light-theme está ativa */
+.light-theme .theme-toggle-track {
+    background: #e2e8f0;
+}
+
+.light-theme .theme-toggle-thumb {
+    left: 25px;
     background: var(--primary);
+    box-shadow: 0 0 8px var(--primary-glow);
+}
+
+.light-theme .theme-toggle-thumb svg {
+    stroke: #ffffff;
+}
+
+.light-theme .sun-icon {
+    display: block;
+}
+
+.light-theme .moon-icon {
+    display: none;
+}
+
+.light-theme .theme-toggle-btn {
+    background: rgba(0, 0, 0, 0.02);
+    color: var(--text-secondary);
+}
+
+.light-theme .theme-toggle-btn:hover {
+    background: rgba(0, 0, 0, 0.06);
+    color: var(--text-primary);
+    border-color: rgba(0, 0, 0, 0.12);
 }
