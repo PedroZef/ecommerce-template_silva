@@ -238,8 +238,15 @@ body:has(.light-theme) {
 .main-content {
     flex: 1;
     margin-left: 280px;
-    padding: 2.5rem 3rem;
+    padding: 2.5rem 3rem 0 3rem;
     width: calc(100% - 280px);
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.content-wrapper {
+    flex: 1;
 }
 
 /* Cabeçalho da Página */
@@ -908,3 +915,283 @@ body:has(.light-theme) {
     color: var(--text-primary);
     border-color: rgba(0, 0, 0, 0.12);
 }
+
+/* ==========================================================================
+   Checkout Payment Methods Styling
+   ========================================================================== */
+
+/* Payment Selector Cards */
+.payment-selector {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+.payment-card-option {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--border-glass);
+    border-radius: 12px;
+    padding: 1rem 0.5rem;
+    text-align: center;
+    cursor: pointer;
+    transition: var(--transition-smooth);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.payment-card-option:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.15);
+    transform: translateY(-2px);
+}
+
+.payment-card-option.active {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(0, 242, 254, 0.05));
+    border-color: var(--primary);
+    box-shadow: 0 0 15px var(--primary-glow);
+    color: white;
+}
+
+.payment-card-option svg {
+    width: 24px;
+    height: 24px;
+    color: var(--text-secondary);
+    transition: var(--transition-smooth);
+}
+
+.payment-card-option.active svg {
+    color: var(--accent);
+    filter: drop-shadow(0 0 5px var(--accent-glow));
+}
+
+.payment-card-option span {
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+/* Card Form Container Layout */
+.payment-form-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+/* Interactive Virtual Credit Card Container */
+.virtual-card-wrapper {
+    perspective: 1000px;
+    width: 100%;
+    max-width: 300px;
+    height: 180px;
+    margin: 0.5rem auto 1.5rem auto;
+}
+
+.virtual-card {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.virtual-card.is-flipped {
+    transform: rotateY(180deg);
+}
+
+.card-face {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    border-radius: 16px;
+    padding: 1.25rem;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.card-front {
+    background: linear-gradient(135deg, #1e1b4b, #4338ca, #3b0764);
+}
+
+.light-theme .card-front {
+    background: linear-gradient(135deg, #0f172a, #312e81, #1e1b4b);
+}
+
+.card-back {
+    background: linear-gradient(135deg, #1f1c2c, #4a475a);
+    transform: rotateY(180deg);
+    padding: 1.25rem 0;
+}
+
+/* Front Details */
+.card-chip {
+    width: 36px;
+    height: 26px;
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    border-radius: 4px;
+    box-shadow: inset 0 0 4px rgba(0,0,0,0.3);
+}
+
+.card-brand {
+    font-size: 1.15rem;
+    font-weight: 800;
+    font-style: italic;
+    color: rgba(255,255,255,0.9);
+    align-self: flex-end;
+}
+
+.card-number {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 1.25rem;
+    letter-spacing: 2px;
+    text-align: center;
+    color: #fff;
+    margin: 0.75rem 0;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+}
+
+.card-footer {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+}
+
+.card-holder-name {
+    font-weight: 600;
+    letter-spacing: 1px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 170px;
+}
+
+.card-expiry-label {
+    text-align: right;
+}
+
+.card-expiry-val {
+    font-weight: 600;
+    letter-spacing: 1px;
+}
+
+/* Back Details */
+.card-magnetic-strip {
+    width: 100%;
+    height: 35px;
+    background: #0f172a;
+    margin-top: 0.25rem;
+}
+
+.card-cvv-strip {
+    background: #fff;
+    height: 30px;
+    width: 80%;
+    margin-left: 10%;
+    margin-top: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 0.75rem;
+    color: #111;
+    font-weight: 700;
+    font-family: 'Courier New', Courier, monospace;
+    letter-spacing: 1.5px;
+    border-radius: 4px;
+}
+
+.card-cvv-strip::before {
+    content: 'CVV';
+    font-size: 0.55rem;
+    color: #666;
+    margin-right: 0.75rem;
+}
+
+/* Pix Container */
+.pix-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: rgba(255,255,255,0.01);
+    border: 1px solid var(--border-glass);
+    border-radius: 12px;
+    animation: fadeIn 0.4s ease;
+}
+
+.pix-qr-box {
+    background: white;
+    padding: 0.75rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    border: 3px solid var(--accent);
+}
+
+.pix-qr-box svg {
+    display: block;
+}
+
+.pix-instructions {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+.pix-key-copy {
+    display: flex;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid var(--border-glass);
+    border-radius: 8px;
+    width: 100%;
+    padding: 0.25rem;
+}
+
+.pix-key-input {
+    background: transparent;
+    border: none;
+    color: var(--text-primary);
+    padding: 0.5rem;
+    font-size: 0.8rem;
+    width: 100%;
+    outline: none;
+    font-family: monospace;
+}
+
+.pix-btn-copy {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.8rem;
+    white-space: nowrap;
+    transition: var(--transition-smooth);
+}
+
+.pix-btn-copy:hover {
+    background: #4f46e5;
+}
+
+.pix-timer {
+    font-size: 0.8rem;
+    color: var(--warning);
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+}

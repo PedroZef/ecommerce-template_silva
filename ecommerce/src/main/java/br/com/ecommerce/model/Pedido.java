@@ -29,6 +29,16 @@ public class Pedido {
     @Column(nullable = false, length = 20)
     private OrderStatus status;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "meio_pagamento", length = 30)
+    private MeioPagamento meioPagamento;
+
+    @Column(name = "parcelas")
+    private Integer parcelas;
+
+    @Column(name = "detalhes_pagamento", length = 100)
+    private String detalhesPagamento;
+
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal total = BigDecimal.ZERO;
 

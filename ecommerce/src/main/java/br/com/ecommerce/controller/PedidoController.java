@@ -3,6 +3,7 @@ package br.com.ecommerce.controller;
 import br.com.ecommerce.exception.EstoqueInsuficienteException;
 import br.com.ecommerce.model.Cliente;
 import br.com.ecommerce.model.ItemPedido;
+import br.com.ecommerce.model.MeioPagamento;
 import br.com.ecommerce.model.Pedido;
 import br.com.ecommerce.model.Produto;
 import br.com.ecommerce.service.ClienteService;
@@ -50,6 +51,12 @@ public class PedidoController {
             @RequestParam("clienteId") Long clienteId,
             @RequestParam(value = "produtoId", required = false) List<Long> produtoIds,
             @RequestParam(value = "quantidade", required = false) List<Integer> quantidades,
+            @RequestParam("meioPagamento") MeioPagamento meioPagamento,
+            @RequestParam(value = "numCartao", required = false) String numCartao,
+            @RequestParam(value = "nomeCartao", required = false) String nomeCartao,
+            @RequestParam(value = "validadeCartao", required = false) String validadeCartao,
+            @RequestParam(value = "cvvCartao", required = false) String cvvCartao,
+            @RequestParam(value = "parcelas", required = false) Integer parcelas,
             RedirectAttributes redirectAttributes) {
 
         if (produtoIds == null || quantidades == null || produtoIds.isEmpty()) {
@@ -65,6 +72,21 @@ public class PedidoController {
             // 2. Instancia o Pedido
             Pedido pedido = new Pedido();
             pedido.setCliente(cliente);
+            pedido.setMeioPagamento(meioPagamento);
+            if (meioPagamento == MeioPagamento.CARTAO_CREDITO) {
+                pedido.setParcelas(parcelas != null ? parcelas : 1);
+                String cleanNum = numCartao != null ? numCartao.replaceAll("\\D", "") : "";
+                String last4 = cleanNum.length() >= 4 ? cleanNum.substring(cleanNum.length() - 4) : "xxxx";
+                pedido.setDetalhesPagamento(String.format("Crédito final %s - %dx", last4, pedido.getParcelas()));
+            } else if (meioPagamento == MeioPagamento.CARTAO_DEBITO) {
+                pedido.setParcelas(null);
+                String cleanNum = numCartao != null ? numCartao.replaceAll("\\D", "") : "";
+                String last4 = cleanNum.length() >= 4 ? cleanNum.substring(cleanNum.length() - 4) : "xxxx";
+                pedido.setDetalhesPagamento(String.format("Débito final %s", last4));
+            } else if (meioPagamento == MeioPagamento.PIX) {
+                pedido.setParcelas(null);
+                pedido.setDetalhesPagamento("Pix Simulado");
+            }
 
             // 3. Monta os itens do pedido
             for (int i = 0; i < produtoIds.size(); i++) {
