@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
     <head th:replace="~{layout :: head('Simulador Transacional ACID')}"></head>
     <body>
@@ -257,6 +257,15 @@
                                         </svg>
                                         <span>Pix</span>
                                     </div>
+                                    <div class="payment-card-option" id="tab-boleto" onclick="selectPaymentMethod('BOLETO')">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <rect x="3" y="4" width="18" height="16" rx="2" ry="2"></rect>
+                                            <line x1="3" y1="10" x2="21" y2="10"></line>
+                                            <line x1="7" y1="15" x2="7.01" y2="15"></line>
+                                            <line x1="11" y1="15" x2="13" y2="15"></line>
+                                        </svg>
+                                        <span>Boleto</span>
+                                    </div>
                                 </div>
 
                                 <!-- Form de Cartões (Crédito/Débito) -->
@@ -374,6 +383,21 @@
                                             <polyline points="12 6 12 12 16 14"></polyline>
                                         </svg>
                                         <span>Código expira em 10:00</span>
+                                    </div>
+                                </div>
+
+                                <!-- Boleto Info -->
+                                <div id="boleto-info-wrapper" class="pix-container" style="display: none; flex-direction: column; align-items: center; justify-content: center; padding: 2rem;">
+                                    <div style="text-align: center; margin-bottom: 1rem; color: var(--text-secondary);">
+                                        <svg viewBox="0 0 24 24" width="64" height="64" fill="none" stroke="currentColor" stroke-width="1.5">
+                                            <rect x="3" y="4" width="18" height="16" rx="2" ry="2"></rect>
+                                            <line x1="3" y1="10" x2="21" y2="10"></line>
+                                            <line x1="7" y1="15" x2="7.01" y2="15"></line>
+                                            <line x1="11" y1="15" x2="13" y2="15"></line>
+                                        </svg>
+                                    </div>
+                                    <div class="pix-instructions" style="text-align: center;">
+                                        O boleto será gerado após a finalização da compra. O prazo de vencimento é de 3 dias úteis.
                                     </div>
                                 </div>
                             </div>
@@ -582,6 +606,7 @@
                 
                 const cardForm = document.getElementById('card-form-wrapper');
                 const pixInfo = document.getElementById('pix-info-wrapper');
+                const boletoInfo = document.getElementById('boleto-info-wrapper');
                 const parcelasGroup = document.getElementById('parcelas-group');
                 
                 const numCartao = document.getElementById('numCartao');
@@ -593,6 +618,7 @@
                     document.getElementById('tab-credito').classList.add('active');
                     cardForm.style.display = 'block';
                     pixInfo.style.display = 'none';
+                    boletoInfo.style.display = 'none';
                     parcelasGroup.style.display = 'block';
                     
                     numCartao.required = true;
@@ -603,6 +629,7 @@
                     document.getElementById('tab-debito').classList.add('active');
                     cardForm.style.display = 'block';
                     pixInfo.style.display = 'none';
+                    boletoInfo.style.display = 'none';
                     parcelasGroup.style.display = 'none';
                     
                     numCartao.required = true;
@@ -613,6 +640,17 @@
                     document.getElementById('tab-pix').classList.add('active');
                     cardForm.style.display = 'none';
                     pixInfo.style.display = 'flex';
+                    boletoInfo.style.display = 'none';
+                    
+                    numCartao.required = false;
+                    nomeCartao.required = false;
+                    validadeCartao.required = false;
+                    cvvCartao.required = false;
+                } else if (method === 'BOLETO') {
+                    document.getElementById('tab-boleto').classList.add('active');
+                    cardForm.style.display = 'none';
+                    pixInfo.style.display = 'none';
+                    boletoInfo.style.display = 'flex';
                     
                     numCartao.required = false;
                     nomeCartao.required = false;

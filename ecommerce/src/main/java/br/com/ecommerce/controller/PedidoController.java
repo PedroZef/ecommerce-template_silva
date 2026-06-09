@@ -1,5 +1,15 @@
 package br.com.ecommerce.controller;
 
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
 import br.com.ecommerce.exception.EstoqueInsuficienteException;
 import br.com.ecommerce.model.Cliente;
 import br.com.ecommerce.model.ItemPedido;
@@ -9,15 +19,6 @@ import br.com.ecommerce.model.Produto;
 import br.com.ecommerce.service.ClienteService;
 import br.com.ecommerce.service.PedidoService;
 import br.com.ecommerce.service.ProdutoService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import java.util.ArrayList;
-import java.util.List;
 
 @Controller
 public class PedidoController {
@@ -73,19 +74,27 @@ public class PedidoController {
             Pedido pedido = new Pedido();
             pedido.setCliente(cliente);
             pedido.setMeioPagamento(meioPagamento);
-            if (meioPagamento == MeioPagamento.CARTAO_CREDITO) {
-                pedido.setParcelas(parcelas != null ? parcelas : 1);
-                String cleanNum = numCartao != null ? numCartao.replaceAll("\\D", "") : "";
-                String last4 = cleanNum.length() >= 4 ? cleanNum.substring(cleanNum.length() - 4) : "xxxx";
-                pedido.setDetalhesPagamento(String.format("Crédito final %s - %dx", last4, pedido.getParcelas()));
-            } else if (meioPagamento == MeioPagamento.CARTAO_DEBITO) {
-                pedido.setParcelas(null);
-                String cleanNum = numCartao != null ? numCartao.replaceAll("\\D", "") : "";
-                String last4 = cleanNum.length() >= 4 ? cleanNum.substring(cleanNum.length() - 4) : "xxxx";
-                pedido.setDetalhesPagamento(String.format("Débito final %s", last4));
-            } else if (meioPagamento == MeioPagamento.PIX) {
-                pedido.setParcelas(null);
-                pedido.setDetalhesPagamento("Pix Simulado");
+            switch (meioPagamento) {
+                case CARTAO_CREDITO -> {
+                    pedido.setParcelas(parcelas != null ? parcelas : 1);
+                    String cleanNum = numCartao != null ? numCartao.replaceAll("\\D", "") : "";
+                    String last4 = cleanNum.length() >= 4 ? cleanNum.substring(cleanNum.length() - 4) : "xxxx";
+                    pedido.setDetalhesPagamento(String.format("Crédito final %s - %dx", last4, pedido.getParcelas()));
+                }
+                case CARTAO_DEBITO -> {
+                    pedido.setParcelas(null);
+                    String cleanNum = numCartao != null ? numCartao.replaceAll("\\D", "") : "";
+                    String last4 = cleanNum.length() >= 4 ? cleanNum.substring(cleanNum.length() - 4) : "xxxx";
+                    pedido.setDetalhesPagamento(String.format("Débito final %s", last4));
+                }
+                case PIX -> {
+                    pedido.setParcelas(null);
+                    pedido.setDetalhesPagamento("Pix Simulado");
+                }
+                case BOLETO -> {
+                    pedido.setParcelas(null);
+                    pedido.setDetalhesPagamento("Boleto Bancário (3 dias úteis)");
+                }
             }
 
             // 3. Monta os itens do pedido

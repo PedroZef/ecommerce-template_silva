@@ -5,7 +5,6 @@ public enum MeioPagamento {
     CARTAO_DEBITO("Cartão de Débito"),
     PIX("Pix"),
     BOLETO("Boleto");
-    
 
     private final String descricao;
 
