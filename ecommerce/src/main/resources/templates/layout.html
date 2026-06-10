@@ -1,5 +1,10 @@
 <!doctype html>
-<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<html
+    lang="pt-BR"
+    xmlns:th="http://www.thymeleaf.org"
+    xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6"
+    th:data-theme="${theme}"
+>
     <!-- Fragmento de Head Comum -->
     <head th:fragment="head(title)">
         <meta charset="UTF-8" />
@@ -35,6 +40,7 @@
                     <li
                         class="nav-item"
                         th:classappend="${activePage == 'dashboard' ? 'active' : ''}"
+                        sec:authorize="hasRole('ADMIN')"
                     >
                         <a th:href="@{/}">
                             <svg
@@ -56,6 +62,7 @@
                     <li
                         class="nav-item"
                         th:classappend="${activePage == 'categorias' ? 'active' : ''}"
+                        sec:authorize="hasRole('ADMIN')"
                     >
                         <a th:href="@{/categorias}">
                             <svg
@@ -76,6 +83,7 @@
                     <li
                         class="nav-item"
                         th:classappend="${activePage == 'produtos' ? 'active' : ''}"
+                        sec:authorize="hasRole('ADMIN')"
                     >
                         <a th:href="@{/produtos}">
                             <svg
@@ -100,6 +108,7 @@
                     <li
                         class="nav-item"
                         th:classappend="${activePage == 'clientes' ? 'active' : ''}"
+                        sec:authorize="hasRole('ADMIN')"
                     >
                         <a th:href="@{/clientes}">
                             <svg
@@ -167,6 +176,19 @@
                         </a>
                     </li>
                 </ul>
+                
+                <!-- Botão de Trocar Tema (Sem JavaScript) -->
+                <div class="theme-switch-wrapper" style="padding: 20px; margin-top: auto; border-top: 1px solid rgba(255,255,255,0.1);">
+                    <form th:action="@{/theme/toggle}" method="post" style="margin: 0;">
+                        <!-- O input hidden manda o tema atual pro backend saber qual é o oposto -->
+                        <input type="hidden" name="currentTheme" th:value="${theme}" />
+                        
+                        <button type="submit" class="btn-theme-toggle" style="width: 100%; padding: 10px; border-radius: 8px; border: none; cursor: pointer; background: rgba(255,255,255,0.1); color: inherit; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                            <span th:if="${theme == 'dark'}">☀️ Modo Light</span>
+                            <span th:if="${theme == 'light'}">🌙 Modo Dark</span>
+                        </button>
+                    </form>
+                </div>
             </aside>
 
             <!-- Área de Conteúdo Principal Dinâmica -->
@@ -175,12 +197,14 @@
                     <!-- Insere o corpo do conteúdo da página filha -->
                     <div th:replace="${contentBody}"></div>
                 </div>
-
-                <!-- Footer Global -->
-                <footer class="main-footer">
-                    <p>&copy; 2026 E-Commerce_T3 - Sprint MVC - Pedro Zeferino da Silva.</p>
-                </footer>
             </main>
         </div>
+        <!-- Footer Global -->
+        <footer class="main-footer">
+            <p>
+                &copy; 2026 E-Commerce_T3 - Sprint MVC - Pedro Zeferino da
+                Silva.
+            </p>
+        </footer>
     </body>
 </html>

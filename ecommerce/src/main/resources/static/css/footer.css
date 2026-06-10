@@ -1,12 +1,23 @@
 .main-footer {
-
     text-align: center;
-    padding: 2rem;
-    position: fixed;
-    bottom: 0;
-    left: 0;
+    padding: 1.5rem 1rem;
+    position: relative; /* Removido o fixed para não sobrepor o conteúdo */
     width: 100%;
-    color: var(--primary);
-    font-size: 0.85rem;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    border-top: 1px solid var(--border-glass);
+    background: rgba(0, 0, 0, 0.1);
+    margin-top: auto;
+}
 
+[data-theme="light"] .main-footer {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+/* Responsividade para telas menores */
+@media(max-width: 768px) {
+    .main-footer {
+        padding: 1rem;
+        font-size: 0.8rem;
+    }
 }

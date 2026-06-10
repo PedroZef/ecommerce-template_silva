@@ -1,0 +1,43 @@
+### POST - Criar novo produto
+POST http://localhost:8080/api/produtos
+Content-Type: application/json
+
+{
+  "categoria": {
+    "id": 6,
+    "nome": "Games e Consoles"
+  },
+  "descricao": "Experimente o carregamento ultrarrápido com um SSD de velocidade incrível.",
+  "estoque": 3,
+  "id": 5,
+  "nome": "Console NextGen 8K",
+  "preco": 4599
+}
+
+### GET - Listar todos os produtos
+GET http://localhost:8080/api/produtos
+
+### GET - Buscar produto por ID
+GET http://localhost:8080/api/produtos/1
+
+
+### PUT - Atualizar produto
+PUT http://localhost:8080/api/produtos/4
+Content-Type: application/json
+
+{
+"nome": "Mouse Gamer",
+"descricao": "RGB 3200 DPI",
+"preco": 129.90,
+"estoque": 15,
+"categoria": {
+  "id": 1
+}
+}
+
+### DELETE - Remover produto
+DELETE http://localhost:8080/api/produtos/1
+
+### GET - Acessar rota protegida de clientes (Requer ROLE_ADMIN)
+GET http://localhost:8080/clientes
+Authorization: Basic admin@admin.com admin123

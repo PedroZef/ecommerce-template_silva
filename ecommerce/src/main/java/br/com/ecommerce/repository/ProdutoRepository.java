@@ -8,4 +8,5 @@ import java.util.List;
 @Repository
 public interface ProdutoRepository extends JpaRepository<Produto, Long> {
     List<Produto> findByCategoriaId(Long categoriaId);
+    long countByEstoqueLessThan(Integer estoque);
 }

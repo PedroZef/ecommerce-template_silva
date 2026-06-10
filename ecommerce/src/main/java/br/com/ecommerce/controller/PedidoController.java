@@ -8,38 +8,69 @@ import br.com.ecommerce.model.Produto;
 import br.com.ecommerce.service.ClienteService;
 import br.com.ecommerce.service.PedidoService;
 import br.com.ecommerce.service.ProdutoService;
-import org.springframework.beans.factory.annotation.Autowired;
+import br.com.ecommerce.model.FormaPagamento;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import lombok.RequiredArgsConstructor;
 import java.util.ArrayList;
 import java.util.List;
 
 @Controller
+@RequiredArgsConstructor
 public class PedidoController {
 
-    @Autowired
-    private PedidoService pedidoService;
-
-    @Autowired
-    private ClienteService clienteService;
-
-    @Autowired
-    private ProdutoService produtoService;
+    private final PedidoService pedidoService;
+    private final ClienteService clienteService;
+    private final ProdutoService produtoService;
 
     @GetMapping("/pedidos")
     public String listar(Model model) {
-        model.addAttribute("pedidos", pedidoService.listarTodos());
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        boolean isAdmin = auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+
+        if (isAdmin) {
+            model.addAttribute("pedidos", pedidoService.listarTodos());
+        } else {
+            // Clientes normais só podem ver seu próprio histórico de pedidos
+            Cliente loggedCliente = clienteService.buscarPorEmail(auth.getName()).orElse(null);
+            if (loggedCliente != null) {
+                // Filtra ou apenas exibe do cliente logado. 
+                // Para manter simples, podemos filtrar a lista de todos os pedidos no controlador
+                List<Pedido> pedidosFiltrados = pedidoService.listarTodos().stream()
+                        .filter(p -> p.getCliente().getId().equals(loggedCliente.getId()))
+                        .toList();
+                model.addAttribute("pedidos", pedidosFiltrados);
+            } else {
+                model.addAttribute("pedidos", new ArrayList<Pedido>());
+            }
+        }
         model.addAttribute("page", "pedidos");
         return "pedidos";
     }
 
     @GetMapping("/checkout")
     public String exibirCheckout(Model model) {
-        model.addAttribute("clientes", clienteService.listarTodos());
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        boolean isAdmin = auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+
+        if (isAdmin) {
+            model.addAttribute("clientes", clienteService.listarTodos());
+        } else {
+            Cliente loggedCliente = clienteService.buscarPorEmail(auth.getName()).orElse(null);
+            model.addAttribute("loggedCliente", loggedCliente);
+            if (loggedCliente != null) {
+                model.addAttribute("clienteId", loggedCliente.getId());
+            }
+        }
+
         model.addAttribute("produtos", produtoService.listarTodos());
         model.addAttribute("page", "checkout");
         return "checkout";
@@ -47,10 +78,29 @@ public class PedidoController {
 
     @PostMapping("/checkout/comprar")
     public String processarCheckout(
-            @RequestParam("clienteId") Long clienteId,
+            @RequestParam(value = "clienteId", required = false) Long clienteId,
+            @RequestParam("formaPagamento") FormaPagamento formaPagamento,
             @RequestParam(value = "produtoId", required = false) List<Long> produtoIds,
             @RequestParam(value = "quantidade", required = false) List<Integer> quantidades,
             RedirectAttributes redirectAttributes) {
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        boolean isAdmin = auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+
+        // Se não for Admin, força o clienteId a ser o do usuário autenticado por segurança
+        final Long finalClienteId;
+        if (!isAdmin) {
+            Cliente loggedCliente = clienteService.buscarPorEmail(auth.getName())
+                    .orElseThrow(() -> new IllegalArgumentException("Cliente associado ao usuário logado não foi encontrado."));
+            finalClienteId = loggedCliente.getId();
+        } else {
+            if (clienteId == null) {
+                redirectAttributes.addFlashAttribute("error", "Selecione um cliente para finalizar o checkout.");
+                return "redirect:/checkout";
+            }
+            finalClienteId = clienteId;
+        }
 
         if (produtoIds == null || quantidades == null || produtoIds.isEmpty()) {
             redirectAttributes.addFlashAttribute("error", "Selecione pelo menos um produto para realizar a compra.");
@@ -59,12 +109,13 @@ public class PedidoController {
 
         try {
             // 1. Busca o cliente
-            Cliente cliente = clienteService.buscarPorId(clienteId)
-                    .orElseThrow(() -> new IllegalArgumentException("Cliente não encontrado com o ID: " + clienteId));
+            Cliente cliente = clienteService.buscarPorId(finalClienteId)
+                    .orElseThrow(() -> new IllegalArgumentException("Cliente não encontrado com o ID: " + finalClienteId));
 
             // 2. Instancia o Pedido
             Pedido pedido = new Pedido();
             pedido.setCliente(cliente);
+            pedido.setFormaPagamento(formaPagamento);
 
             // 3. Monta os itens do pedido
             for (int i = 0; i < produtoIds.size(); i++) {

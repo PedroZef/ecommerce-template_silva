@@ -1,6 +1,6 @@
 package br.com.ecommerce.config;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -15,120 +15,96 @@ import br.com.ecommerce.repository.ProdutoRepository;
 import br.com.ecommerce.repository.UsuarioRepository;
 
 import java.math.BigDecimal;
-import java.util.Arrays;
+import java.util.Optional;
 
 @Component
-
+@RequiredArgsConstructor
 public class DataLoader implements CommandLineRunner {
 
-    @Autowired
-    private CategoriaRepository categoriaRepository;
-
-    @Autowired
-    private ProdutoRepository produtoRepository;
-
-    @Autowired
-    private ClienteRepository clienteRepository;
-
-    @Autowired
-    private UsuarioRepository usuarioRepository1;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    private final CategoriaRepository categoriaRepository;
+    private final ProdutoRepository produtoRepository;
+    private final ClienteRepository clienteRepository;
+    private final UsuarioRepository usuarioRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public void run(String... args) throws Exception {
-        // Criar usuários do sistema se não existirem
-        if (usuarioRepository1.count() == 0) {
-            Usuario admin = new Usuario();
-            admin.setEmail("admin@admin.com");
-            admin.setSenha(passwordEncoder.encode("admin123"));
-            admin.setRole("ROLE_ADMIN");
+        System.out.println("====== INICIANDO POPULAÇÃO IDEMPOTENTE DO BANCO DE DADOS ======");
 
-            Usuario cliente = new Usuario();
-            cliente.setEmail("cliente@cliente.com");
-            cliente.setSenha(passwordEncoder.encode("cliente123"));
-            cliente.setRole("ROLE_USER");
+        // 1. Criar usuários do sistema de forma segura
+        criarUsuarioSeNaoExistir("admin@admin.com", "admin123", "ROLE_ADMIN");
+        criarUsuarioSeNaoExistir("maria.silva@email.com", "cliente123", "ROLE_USER");
+        criarUsuarioSeNaoExistir("joao.oliveira@email.com", "cliente123", "ROLE_USER");
+        criarUsuarioSeNaoExistir("ana.souza@email.com", "cliente123", "ROLE_USER");
 
-            usuarioRepository1.saveAll(Arrays.asList(admin, cliente));
-            System.out.println("====== USUÁRIOS DE EXEMPLO CRIADOS ======");
+        // 2. Criar Categorias de forma segura
+        Categoria eletronicos = criarCategoriaSeNaoExistir("Eletrônicos");
+        Categoria roupas = criarCategoriaSeNaoExistir("Roupas");
+        Categoria livros = criarCategoriaSeNaoExistir("Livros");
+        Categoria games = criarCategoriaSeNaoExistir("Games");
+
+        // 3. Criar Clientes de forma segura
+        criarClienteSeNaoExistir("Maria Silva", "maria.silva@email.com", "123.456.789-00");
+        criarClienteSeNaoExistir("João Oliveira", "joao.oliveira@email.com", "987.654.321-11");
+        criarClienteSeNaoExistir("Ana Souza", "ana.souza@email.com", "456.789.123-22");
+
+        // 4. Criar Produtos de forma segura
+        criarProdutoSeNaoExistir("Smartphone Pro Max", "Tela de 6.7 polegadas, 256GB de armazenamento, câmera tripla de 48MP.", new BigDecimal("5999.00"), 10, eletronicos);
+        criarProdutoSeNaoExistir("Notebook Ultra Slim", "Processador de última geração, 16GB RAM, SSD 512GB, tela de 14 polegadas.", new BigDecimal("4299.90"), 5, eletronicos);
+        criarProdutoSeNaoExistir("Camiseta Algodão Egípcio", "Camiseta premium preta 100% algodão egípcio com toque super macio.", new BigDecimal("89.90"), 25, roupas);
+        criarProdutoSeNaoExistir("Spring Boot da Prática ao Deploy", "Aprenda a construir APIs REST robustas, Spring MVC, Thymeleaf e banco de dados.", new BigDecimal("79.90"), 30, livros);
+        criarProdutoSeNaoExistir("Console NextGen 8K", "Experimente o carregamento ultrarrápido com um SSD de velocidade incrível.", new BigDecimal("4499.00"), 3, games);
+
+        System.out.println("====== BANCO DE DADOS ATUALIZADO COM SUCESSO ======");
+    }
+
+    private void criarUsuarioSeNaoExistir(String email, String senha, String role) {
+        Optional<Usuario> usuarioOpt = usuarioRepository.findByEmail(email);
+        if (usuarioOpt.isEmpty()) {
+            Usuario usuario = new Usuario();
+            usuario.setEmail(email);
+            usuario.setSenha(passwordEncoder.encode(senha));
+            usuario.setRole(role);
+            usuarioRepository.save(usuario);
+            System.out.println("Usuário criado: " + email);
         }
+    }
 
-        if (categoriaRepository.count() == 0) {
-            System.out.println("====== POPULANDO BANCO DE DADOS COM DADOS DE EXEMPLO ======");
+    private Categoria criarCategoriaSeNaoExistir(String nome) {
+        return categoriaRepository.findByNome(nome).orElseGet(() -> {
+            Categoria categoria = new Categoria();
+            categoria.setNome(nome);
+            Categoria salva = categoriaRepository.save(categoria);
+            System.out.println("Categoria criada: " + nome);
+            return salva;
+        });
+    }
 
-            // 1. Criar Categorias
-            Categoria eletronicos = new Categoria();
-            eletronicos.setNome("Eletrônicos");
+    private void criarClienteSeNaoExistir(String nome, String email, String cpf) {
+        Optional<Cliente> clienteOpt = clienteRepository.findByEmail(email);
+        if (clienteOpt.isEmpty()) {
+            Cliente cliente = new Cliente();
+            cliente.setNome(nome);
+            cliente.setEmail(email);
+            cliente.setCpf(cpf);
+            clienteRepository.save(cliente);
+            System.out.println("Cliente criado: " + nome + " (" + email + ")");
+        }
+    }
 
-            Categoria roupas = new Categoria();
-            roupas.setNome("Roupas");
-
-            Categoria livros = new Categoria();
-            livros.setNome("Livros");
-
-            Categoria games = new Categoria();
-            games.setNome("Games");
-
-            categoriaRepository.saveAll(Arrays.asList(eletronicos, roupas, livros, games));
-
-            // 2. Criar Produtos
-            Produto smartphone = new Produto();
-            smartphone.setNome("Smartphone Pro Max");
-            smartphone.setDescricao("Tela de 6.7 polegadas, 256GB de armazenamento, câmera tripla de 48MP.");
-            smartphone.setPreco(new BigDecimal("5999.00"));
-            smartphone.setEstoque(10);
-            smartphone.setCategoria(eletronicos);
-
-            Produto notebook = new Produto();
-            notebook.setNome("Notebook Ultra Slim");
-            notebook.setDescricao("Processador de última geração, 16GB RAM, SSD 512GB, tela de 14 polegadas.");
-            notebook.setPreco(new BigDecimal("4299.90"));
-            notebook.setEstoque(5);
-            notebook.setCategoria(eletronicos);
-
-            Produto camiseta = new Produto();
-            camiseta.setNome("Camiseta Algodão Egípcio");
-            camiseta.setDescricao("Camiseta premium preta 100% algodão egípcio com toque super macio.");
-            camiseta.setPreco(new BigDecimal("89.90"));
-            camiseta.setEstoque(25);
-            camiseta.setCategoria(roupas);
-
-            Produto livroSpring = new Produto();
-            livroSpring.setNome("Spring Boot da Prática ao Deploy");
-            livroSpring.setDescricao("Aprenda a construir APIs REST robustas, Spring MVC, Thymeleaf e banco de dados.");
-            livroSpring.setPreco(new BigDecimal("79.90"));
-            livroSpring.setEstoque(30);
-            livroSpring.setCategoria(livros);
-
-            Produto consoleGame = new Produto();
-            consoleGame.setNome("Console NextGen 8K");
-            consoleGame.setDescricao("Experimente o carregamento ultrarrápido com um SSD de velocidade incrível.");
-            consoleGame.setPreco(new BigDecimal("4499.00"));
-            consoleGame.setEstoque(3);
-            consoleGame.setCategoria(games);
-
-            produtoRepository.saveAll(Arrays.asList(smartphone, notebook, camiseta, livroSpring, consoleGame));
-
-            // 3. Criar Clientes
-            Cliente c1 = new Cliente();
-            c1.setNome("Maria Silva");
-            c1.setEmail("maria.silva@email.com");
-            c1.setCpf("123.456.789-00");
-
-            Cliente c2 = new Cliente();
-            c2.setNome("João Oliveira");
-            c2.setEmail("joao.oliveira@email.com");
-            c2.setCpf("987.654.321-11");
-
-            Cliente c3 = new Cliente();
-            c3.setNome("Ana Souza");
-            c3.setEmail("ana.souza@email.com");
-            c3.setCpf("456.789.123-22");
-
-            clienteRepository.saveAll(Arrays.asList(c1, c2, c3));
-
-            System.out.println("====== DADOS DE EXEMPLO POPULADOS COM SUCESSO ======");
+    private void criarProdutoSeNaoExistir(String nome, String descricao, BigDecimal preco, int estoque, Categoria categoria) {
+        if (categoria == null) return;
+        boolean existe = produtoRepository.findAll().stream()
+                .anyMatch(p -> p.getNome().equalsIgnoreCase(nome));
+        if (!existe) {
+            Produto produto = new Produto();
+            produto.setNome(nome);
+            produto.setDescricao(descricao);
+            produto.setPreco(preco);
+            produto.setEstoque(estoque);
+            produto.setCategoria(categoria);
+            produtoRepository.save(produto);
+            System.out.println("Produto criado: " + nome);
         }
     }
 }

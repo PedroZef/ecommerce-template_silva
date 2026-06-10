@@ -2,7 +2,7 @@ package br.com.ecommerce.service;
 
 import br.com.ecommerce.model.Cliente;
 import br.com.ecommerce.repository.ClienteRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
@@ -10,10 +10,14 @@ import java.util.Optional;
 
 @Service
 @Transactional(readOnly = true)
+@RequiredArgsConstructor
 public class ClienteService {
 
-    @Autowired
-    private ClienteRepository repository;
+    private final ClienteRepository repository;
+
+    public long contarTodos() {
+        return repository.count();
+    }
 
     public List<Cliente> listarTodos() {
         return repository.findAll();
@@ -21,6 +25,10 @@ public class ClienteService {
 
     public Optional<Cliente> buscarPorId(Long id) {
         return repository.findById(id);
+    }
+
+    public Optional<Cliente> buscarPorEmail(String email) {
+        return repository.findByEmail(email);
     }
 
     @Transactional

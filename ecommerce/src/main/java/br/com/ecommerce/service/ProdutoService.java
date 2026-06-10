@@ -2,7 +2,7 @@ package br.com.ecommerce.service;
 
 import br.com.ecommerce.model.Produto;
 import br.com.ecommerce.repository.ProdutoRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
@@ -10,10 +10,18 @@ import java.util.Optional;
 
 @Service
 @Transactional(readOnly = true)
+@RequiredArgsConstructor
 public class ProdutoService {
 
-    @Autowired
-    private ProdutoRepository repository;
+    private final ProdutoRepository repository;
+
+    public long contarTodos() {
+        return repository.count();
+    }
+
+    public long contarEstoqueBaixo(int limite) {
+        return repository.countByEstoqueLessThan(limite);
+    }
 
     public List<Produto> listarTodos() {
         return repository.findAll();
@@ -30,6 +38,18 @@ public class ProdutoService {
     @Transactional
     public Produto salvar(Produto produto) {
         return repository.save(produto);
+    }
+
+    @Transactional
+    public Produto atualizar(Long id, Produto produtoAtualizado) {
+        return repository.findById(id).map(produto -> {
+            produto.setNome(produtoAtualizado.getNome());
+            produto.setDescricao(produtoAtualizado.getDescricao());
+            produto.setPreco(produtoAtualizado.getPreco());
+            produto.setEstoque(produtoAtualizado.getEstoque());
+            produto.setCategoria(produtoAtualizado.getCategoria());
+            return repository.save(produto);
+        }).orElseThrow(() -> new IllegalArgumentException("Produto não encontrado com o ID: " + id));
     }
 
     @Transactional

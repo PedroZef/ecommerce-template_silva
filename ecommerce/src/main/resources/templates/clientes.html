@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org" th:data-theme="${theme}">
     <head th:replace="~{layout :: head('Gerenciar Clientes')}"></head>
     <body>
         <div
@@ -263,5 +263,12 @@
                 </div>
             </div>
         </div>
+        <!-- Footer Global -->
+        <footer class="main-footer">
+            <p>
+                &copy; 2026 E-Commerce_T3 - Sprint MVC - Pedro Zeferino da
+                Silva.
+            </p>
+        </footer>
     </body>
 </html>

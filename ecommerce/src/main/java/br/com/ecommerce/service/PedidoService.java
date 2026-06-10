@@ -7,7 +7,7 @@ import br.com.ecommerce.model.Pedido;
 import br.com.ecommerce.model.Produto;
 import br.com.ecommerce.repository.PedidoRepository;
 import br.com.ecommerce.repository.ProdutoRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
@@ -16,13 +16,19 @@ import java.util.Optional;
 
 @Service
 @Transactional(readOnly = true)
+@RequiredArgsConstructor
 public class PedidoService {
 
-    @Autowired
-    private PedidoRepository pedidoRepository;
+    private final PedidoRepository pedidoRepository;
+    private final ProdutoRepository produtoRepository;
 
-    @Autowired
-    private ProdutoRepository produtoRepository;
+    public long contarTodos() {
+        return pedidoRepository.count();
+    }
+
+    public BigDecimal calcularFaturamentoTotal() {
+        return pedidoRepository.sumTotal();
+    }
 
     public List<Pedido> listarTodos() {
         return pedidoRepository.findAll();

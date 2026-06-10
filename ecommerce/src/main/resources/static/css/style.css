@@ -30,6 +30,83 @@
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* ==========================================================================
+   Modo Claro (Light Theme Variables)
+   ========================================================================== */
+[data-theme="light"] {
+    --bg-main: #f4f7f6;
+    --bg-panel: rgba(255, 255, 255, 0.85);
+    --border-glass: rgba(0, 0, 0, 0.1);
+    --bg-login: #ffffff;
+    --text-primary: #1f2937;
+    --text-secondary: #4b5563;
+    --primary: #4f46e5;
+    --primary-glow: rgba(79, 70, 229, 0.2);
+    --accent: #0284c7;
+    --accent-glow: rgba(2, 132, 199, 0.2);
+}
+
+[data-theme="light"] .btn-theme-toggle {
+    background-color: rgb(255, 255, 255, 0.2);
+    border: 1px solid var(--border-glass);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    color: var(--text-primary);
+}
+
+button .btn-theme-toggle:hover {
+    background-color: rgb(255, 255, 255, 0.3);
+    border: 1px solid var(--border-glass);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    color: var(--text-primary, #ccc);
+}
+
+[data-theme="light"] body {
+    background-image:
+        radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.1) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(2, 132, 199, 0.08) 0px, transparent 50%);
+}
+
+[data-theme="light"] .sidebar {
+    background: rgba(255, 255, 255, 0.85);
+}
+
+[data-theme="light"] .brand h1 {
+    background: linear-gradient(to right, var(--text-primary), var(--text-secondary));
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+[data-theme="light"] .nav-item:hover a,
+[data-theme="light"] .nav-item.active a,
+[data-theme="light"] .metric-value,
+[data-theme="light"] .form-header,
+[data-theme="light"] .checkout-product-info h4,
+[data-theme="light"] .checkout-qty-input,
+[data-theme="light"] .form-input,
+[data-theme="light"] .form-select,
+[data-theme="light"] .form-textarea {
+    color: var(--text-primary);
+}
+
+[data-theme="light"] .form-input,
+[data-theme="light"] .form-select,
+[data-theme="light"] .form-textarea,
+[data-theme="light"] .checkout-qty-input {
+    background: rgba(255, 255, 255, 0.7);
+}
+
+[data-theme="light"] .checkout-product-card,
+[data-theme="light"] .acid-theory-card {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+[data-theme="light"] .acid-explanation {
+    background: rgba(239, 68, 68, 0.05);
+}
+
 * {
     margin: 0;
     padding: 0;

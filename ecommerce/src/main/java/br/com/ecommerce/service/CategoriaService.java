@@ -2,7 +2,7 @@ package br.com.ecommerce.service;
 
 import br.com.ecommerce.model.Categoria;
 import br.com.ecommerce.repository.CategoriaRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
@@ -10,10 +10,14 @@ import java.util.Optional;
 
 @Service
 @Transactional(readOnly = true)
+@RequiredArgsConstructor
 public class CategoriaService {
 
-    @Autowired
-    private CategoriaRepository repository;
+    private final CategoriaRepository repository;
+
+    public long contarTodas() {
+        return repository.count();
+    }
 
     public List<Categoria> listarTodos() {
         return repository.findAll();

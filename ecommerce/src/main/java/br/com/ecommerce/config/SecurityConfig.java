@@ -15,17 +15,23 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable()) // Desabilita CSRF para permitir testes no Postman
-                .authorizeHttpRequests((requests) -> requests
-                        // 1. Arquivos estáticos liberados
-                        .requestMatchers("/css/**", "/js/**", "/images/**", "/webjars/**").permitAll()
-                        // 2. Apenas a tela de login (e possivelmente produtos se quiser vitrine
-                        // pública) são liberados
-                        .requestMatchers("/login", "/produtos/", "/api/**").permitAll()
+                .csrf(csrf -> csrf
+                        .ignoringRequestMatchers(request -> request.getRequestURI().contains("h2-console"))
+                        .ignoringRequestMatchers("/api/**")) // Mantém CSRF ativo para Thymeleaf, ignorando apenas API e H2
+                .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin())) // Habilita frames para o console H2
+                .authorizeHttpRequests(auth -> auth
+                        // 1. Arquivos estáticos e H2 liberados
+                        .requestMatchers(request -> request.getRequestURI().contains("h2-console")).permitAll()
+                        .requestMatchers("/api/auth/**", "/api/clientes", "/swagger-ui.html", "/swagger-ui/**",
+                                "/api-docs/**", "/status", "/actuator/**", "/login",
+                                "/api/auth/login", "/static/**")
+                        .permitAll()
+                        // 2. Apenas a tela de login pública
+                        .requestMatchers("/login").permitAll()
                         // 3. Páginas de compra (carrinho/checkout e pedidos) exigem usuário logado
                         .requestMatchers("/checkout/**", "/pedidos/**").authenticated()
-                        // 4. (Opcional) Páginas de administração exigem papel de ADMIN
-                        .requestMatchers("/categorias/**", "/clientes/**").hasRole("ADMIN")
+                        // 4. Páginas de administração exigem papel de ADMIN
+                        .requestMatchers("/categorias/**", "/clientes/**", "/produtos/**", "/api/**").hasRole("ADMIN")
                         // 5. O Restante (incluindo "/" e "/home") exige autenticação obrigatória
                         .anyRequest().authenticated())
 
@@ -33,8 +39,7 @@ public class SecurityConfig {
                         .loginPage("/login")
                         .defaultSuccessUrl("/home", true)
                         .permitAll())
-                .httpBasic(org.springframework.security.config.Customizer.withDefaults()) // Habilita Basic Auth para o
-                                                                                          // Postman
+                .httpBasic(org.springframework.security.config.Customizer.withDefaults()) // Habilita Basic Auth para o Postman
                 .logout((logout) -> logout
                         .logoutUrl("/logout")
                         .logoutSuccessUrl("/login?logout")

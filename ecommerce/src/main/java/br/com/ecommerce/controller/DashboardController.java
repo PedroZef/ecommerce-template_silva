@@ -1,50 +1,44 @@
 package br.com.ecommerce.controller;
 
-import br.com.ecommerce.model.Pedido;
+import java.math.BigDecimal;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+
 import br.com.ecommerce.service.CategoriaService;
 import br.com.ecommerce.service.ClienteService;
 import br.com.ecommerce.service.PedidoService;
 import br.com.ecommerce.service.ProdutoService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import java.math.BigDecimal;
-import java.util.List;
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
 
 @Controller
+@RequiredArgsConstructor
 public class DashboardController {
 
-    @Autowired
-    private CategoriaService categoriaService;
-
-    @Autowired
-    private ProdutoService produtoService;
-
-    @Autowired
-    private ClienteService clienteService;
-
-    @Autowired
-    private PedidoService pedidoService;
+    private final CategoriaService categoriaService;
+    private final ProdutoService produtoService;
+    private final ClienteService clienteService;
+    private final PedidoService pedidoService;
 
     @GetMapping("/")
-    public String index(Model model) {
-        // Estatísticas do painel
-        long totalCategorias = categoriaService.listarTodos().size();
-        long totalProdutos = produtoService.listarTodos().size();
-        long totalClientes = clienteService.listarTodos().size();
-        List<Pedido> pedidos = pedidoService.listarTodos();
-        long totalPedidos = pedidos.size();
+    public String index(HttpServletRequest request, Model model) {
+        if (!request.isUserInRole("ROLE_ADMIN")) {
+            return "redirect:/checkout";
+        }
 
-        // Faturamento total
-        BigDecimal faturamentoTotal = pedidos.stream()
-                .map(Pedido::getTotal)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        // Estatísticas do painel usando métodos otimizados no banco de dados
+        long totalCategorias = categoriaService.contarTodas();
+        long totalProdutos = produtoService.contarTodos();
+        long totalClientes = clienteService.contarTodos();
+        long totalPedidos = pedidoService.contarTodos();
 
-        // Quantidade de produtos com estoque baixo (estoque < 5)
-        long estoqueBaixo = produtoService.listarTodos().stream()
-                .filter(p -> p.getEstoque() < 5)
-                .count();
+        // Faturamento total calculado via SUM no banco
+        BigDecimal faturamentoTotal = pedidoService.calcularFaturamentoTotal();
+
+        // Quantidade de produtos com estoque baixo (estoque < 5) calculada no banco
+        long estoqueBaixo = produtoService.contarEstoqueBaixo(5);
 
         model.addAttribute("totalCategorias", totalCategorias);
         model.addAttribute("totalProdutos", totalProdutos);

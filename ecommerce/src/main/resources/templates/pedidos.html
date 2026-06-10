@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org" th:data-theme="${theme}">
     <head
         th:replace="~{layout :: head('Histórico de Pedidos (Commit)')}"
     ></head>
@@ -66,6 +66,7 @@
                                     <th>Cliente</th>
                                     <th>Itens Adquiridos</th>
                                     <th>Status ACID</th>
+                                    <th>Forma de Pagamento</th>
                                     <th>Valor Total</th>
                                 </tr>
                             </thead>
@@ -133,6 +134,16 @@
                                         >
                                     </td>
                                     <td>
+                                        <span
+                                            th:text="${ped.formaPagamento.toString() == 'PIX' ? 'Pix' : (ped.formaPagamento.toString() == 'CARTAO_CREDITO' ? 'Cartão de Crédito' : 'Cartão de Débito')}"
+                                            style="
+                                                color: white;
+                                                font-weight: 500;
+                                            "
+                                            >Pix</span
+                                        >
+                                    </td>
+                                    <td>
                                         <strong
                                             style="
                                                 color: white;
@@ -145,7 +156,7 @@
                                 </tr>
                                 <tr th:if="${#lists.isEmpty(pedidos)}">
                                     <td
-                                        colspan="6"
+                                        colspan="7"
                                         style="
                                             text-align: center;
                                             color: var(--text-secondary);
@@ -169,5 +180,12 @@
                 </div>
             </div>
         </div>
+        <!-- Footer Global -->
+        <footer class="main-footer">
+            <p>
+                &copy; 2026 E-Commerce_T3 - Sprint MVC - Pedro Zeferino da
+                Silva.
+            </p>
+        </footer>
     </body>
 </html>

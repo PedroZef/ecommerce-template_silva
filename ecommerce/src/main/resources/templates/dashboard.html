@@ -1,13 +1,10 @@
 <!doctype html>
 <html
     lang="pt-BR"
-    xmlns:th="http://www.thymeleaf.org"
+    xmlns:th="http://www.thymeleaf.org" th:data-theme="${theme}"
     xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
 >
-    <head th:replace="~{layout :: head('Dashboard')}">
-
-        
-    </head>
+    <head th:replace="~{layout :: head('Dashboard')}"> </head>
     <body>
         <!-- Usa a estrutura mestre definida no layout.html -->
         <div
@@ -361,5 +358,12 @@
                 </div>
             </div>
         </div>
+        <!-- Footer Global -->
+        <footer class="main-footer">
+            <p>
+                &copy; 2026 E-Commerce_T3 - Sprint MVC - Pedro Zeferino da
+                Silva.
+            </p>
+        </footer>
     </body>
 </html>

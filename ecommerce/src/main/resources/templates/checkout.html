@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org" th:data-theme="${theme}">
     <head th:replace="~{layout :: head('Simulador Transacional ACID')}"></head>
     <body>
         <div
@@ -98,27 +98,67 @@
                                 Passo 1: Quem está comprando?
                             </div>
 
-                            <!-- Dropdown de Clientes -->
+                            <!-- Seleção ou Exibição do Cliente -->
                             <div class="form-group" style="margin-bottom: 2rem">
-                                <label for="clienteId" class="form-label"
-                                    >Selecione o Cliente</label
-                                >
-                                <select
-                                    id="clienteId"
-                                    name="clienteId"
-                                    class="form-select"
-                                    required
-                                >
-                                    <option value="" disabled selected>
-                                        -- Escolha um Cliente --
-                                    </option>
-                                    <option
-                                        th:each="cli : ${clientes}"
-                                        th:value="${cli.id}"
-                                        th:text="${cli.nome} + ' (CPF: ' + ${cli.cpf} + ')'"
-                                        th:selected="${cli.id == selectedClienteId}"
-                                    ></option>
-                                </select>
+                                <th:block th:if="${loggedCliente != null}">
+                                    <label class="form-label"
+                                        >Cliente Identificado</label
+                                    >
+                                    <input
+                                        type="hidden"
+                                        name="clienteId"
+                                        th:value="${loggedCliente.id}"
+                                    />
+                                    <div
+                                        class="form-control-static"
+                                        style="
+                                            color: var(--text-primary);
+                                            font-weight: bold;
+                                            background: rgba(
+                                                255,
+                                                255,
+                                                255,
+                                                0.05
+                                            );
+                                            padding: 10px;
+                                            border-radius: 5px;
+                                        "
+                                    >
+                                        <span th:text="${loggedCliente.nome}"
+                                            >Maria Silva</span
+                                        >
+                                        <span
+                                            style="
+                                                color: var(--text-secondary);
+                                                font-size: 0.85em;
+                                                display: block;
+                                            "
+                                            th:text="'CPF: ' + ${loggedCliente.cpf} + ' | Email: ' + ${loggedCliente.email}"
+                                            >CPF: 123.456.789-00</span
+                                        >
+                                    </div>
+                                </th:block>
+                                <th:block th:if="${loggedCliente == null}">
+                                    <label for="clienteId" class="form-label"
+                                        >Selecione o Cliente (Modo Admin)</label
+                                    >
+                                    <select
+                                        id="clienteId"
+                                        name="clienteId"
+                                        class="form-select"
+                                        required
+                                    >
+                                        <option value="" disabled selected>
+                                            -- Escolha um Cliente --
+                                        </option>
+                                        <option
+                                            th:each="cli : ${clientes}"
+                                            th:value="${cli.id}"
+                                            th:text="${cli.nome} + ' (CPF: ' + ${cli.cpf} + ')'"
+                                            th:selected="${cli.id == selectedClienteId}"
+                                        ></option>
+                                    </select>
+                                </th:block>
                             </div>
 
                             <div class="form-header">
@@ -210,6 +250,107 @@
                                     <strong>Produtos</strong>.
                                 </div>
                             </div>
+
+                            <div class="form-header" style="margin-top: 2rem">
+                                <svg
+                                    viewBox="0 0 24 24"
+                                    width="18"
+                                    height="18"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="2"
+                                    style="color: var(--primary)"
+                                >
+                                    <rect
+                                        x="1"
+                                        y="4"
+                                        width="22"
+                                        height="16"
+                                        rx="2"
+                                        ry="2"
+                                    ></rect>
+                                    <line x1="1" y1="10" x2="23" y2="10"></line>
+                                </svg>
+                                Passo 3: Escolha a Forma de Pagamento
+                            </div>
+                            <div
+                                class="form-group"
+                                style="
+                                    margin-bottom: 1rem;
+                                    display: flex;
+                                    flex-wrap: wrap;
+                                    gap: 1.5rem;
+                                    padding-left: 0.5rem;
+                                "
+                            >
+                                <label
+                                    style="
+                                        display: flex;
+                                        align-items: center;
+                                        gap: 0.5rem;
+                                        color: var(--text-primary);
+                                        cursor: pointer;
+                                        font-size: 0.95rem;
+                                    "
+                                >
+                                    <input
+                                        type="radio"
+                                        name="formaPagamento"
+                                        value="PIX"
+                                        checked
+                                        required
+                                        style="
+                                            accent-color: var(--primary);
+                                            transform: scale(1.2);
+                                        "
+                                    />
+                                    <span>Pix</span>
+                                </label>
+                                <label
+                                    style="
+                                        display: flex;
+                                        align-items: center;
+                                        gap: 0.5rem;
+                                        color: var(--text-primary);
+                                        cursor: pointer;
+                                        font-size: 0.95rem;
+                                    "
+                                >
+                                    <input
+                                        type="radio"
+                                        name="formaPagamento"
+                                        value="CARTAO_CREDITO"
+                                        required
+                                        style="
+                                            accent-color: var(--primary);
+                                            transform: scale(1.2);
+                                        "
+                                    />
+                                    <span>Cartão de Crédito</span>
+                                </label>
+                                <label
+                                    style="
+                                        display: flex;
+                                        align-items: center;
+                                        gap: 0.5rem;
+                                        color: var(--text-primary);
+                                        cursor: pointer;
+                                        font-size: 0.95rem;
+                                    "
+                                >
+                                    <input
+                                        type="radio"
+                                        name="formaPagamento"
+                                        value="CARTAO_DEBITO"
+                                        required
+                                        style="
+                                            accent-color: var(--primary);
+                                            transform: scale(1.2);
+                                        "
+                                    />
+                                    <span>Cartão de Débito</span>
+                                </label>
+                            </div>
                         </div>
 
                         <!-- Lado Direito: Informações Didáticas e Ação -->
@@ -249,7 +390,7 @@
                                             points="22 4 12 14.01 9 11.01"
                                         ></polyline>
                                     </svg>
-                                    Passo 3: Executar Transação
+                                    Passo 4: Executar Transação
                                 </div>
 
                                 <div
@@ -267,7 +408,7 @@
                                 >
                                     <h5
                                         style="
-                                            color: white;
+                                            color: var(--text-primary);
                                             font-size: 0.95rem;
                                             font-family: var(--font-heading);
                                             margin-bottom: 0.5rem;
@@ -405,5 +546,12 @@
                 </form>
             </div>
         </div>
+        <!-- Footer Global -->
+        <footer class="main-footer">
+            <p>
+                &copy; 2026 E-Commerce_T3 - Sprint MVC - Pedro Zeferino da
+                Silva.
+            </p>
+        </footer>
     </body>
 </html>
