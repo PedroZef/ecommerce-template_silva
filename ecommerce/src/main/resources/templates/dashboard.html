@@ -1,24 +1,5 @@
-<<<<<<< HEAD
-<!doctype html>
-<html
-    lang="pt-BR"
-    xmlns:th="http://www.thymeleaf.org" th:data-theme="${theme}"
-    xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
->
-    <head th:replace="~{layout :: head('Dashboard')}"> </head>
-    <body>
-        <!-- Usa a estrutura mestre definida no layout.html -->
-        <div
-            th:replace="~{layout :: layout-container(~{:: #dashboard-content}, 'dashboard')}"
-        >
-            <div id="dashboard-content">
-                <!-- Cabeçalho do Dashboard -->
-                <div class="page-header">
-                    <div class="page-title">
-                        <h2>Dashboard E-Commerce</h2>
-=======
 <!DOCTYPE html>
-<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org" th:data-theme="${theme}" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
 
 <head th:replace="~{layout :: head('Dashboard')}"></head>
 
@@ -31,8 +12,7 @@
                 <div class="page-title">
                     <h2>Dashboard E-Commerce</h2>
                     <p>
-                        Visão geral consolidada do catálogo de produtos e
-                        simulação de transações.
+                        Visão geral consolidada do catálogo de produtos e simulação de transações.
                     </p>
                 </div>
             </div>
@@ -140,7 +120,6 @@
                             <span class="badge badge-primary">A</span>
                             Atomicidade (Tudo ou Nada)
                         </h4>
->>>>>>> 0134e271afe65384cd207ddd6f0cc728bf87e58c
                         <p>
                             Ao finalizar um pedido, o estoque de múltiplos
                             produtos é reduzido. Se a quantidade de
@@ -208,7 +187,7 @@
                                 font-size: 0.9rem;
                                 margin-bottom: 1rem;
                             ">
-                        💡 <strong>Dica de Aula:</strong> Use o
+                        ðŸ’¡ <strong>Dica de Aula:</strong> Use o
                         <strong>Simulador ACID</strong> do menu lateral para
                         forçar um erro de estoque e provar aos alunos a
                         reversão atômica (Rollback) em tempo real!
@@ -283,19 +262,6 @@
                 </div>
             </div>
         </div>
-<<<<<<< HEAD
-        <!-- Footer Global -->
-        <footer class="main-footer">
-            <p>
-                &copy; 2026 E-Commerce_T3 - Sprint MVC - Pedro Zeferino da
-                Silva.
-            </p>
-        </footer>
-    </body>
-</html>
-=======
     </div>
 </body>
-
 </html>
->>>>>>> 0134e271afe65384cd207ddd6f0cc728bf87e58c

@@ -1,42 +1,5 @@
-<<<<<<< HEAD
-<!doctype html>
-<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org" th:data-theme="${theme}">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Login - E-commerce</title>
-        <link rel="stylesheet" th:href="@{/css/style.css}" />
-        <link rel="stylesheet" th:href="@{/css/login.css}" />
-        <link rel="stylesheet" th:href="@{/css/footer.css}" />
-    </head>
-    <body>
-        <!-- Botão Flutuante de Tema para a Tela de Login -->
-        <div style="position: absolute; top: 20px; right: 20px;">
-            <form th:action="@{/theme/toggle}" method="post" style="margin: 0;">
-                <input type="hidden" name="currentTheme" th:value="${theme}" />
-                <button type="submit" style="padding: 8px 15px; border-radius: 8px; border: 1px solid var(--text-color, #ccc); cursor: pointer; background: transparent; color: inherit;">
-                    <span th:if="${theme == 'dark'}">☀️ Modo Light</span>
-                    <span th:if="${theme == 'light'}">🌙 Modo Dark</span>
-                </button>
-            </form>
-        </div>
-
-        <div class="container">
-            <div class="login-container">
-                <div class="login-header">
-                    <h2>E-commerce Login</h2>
-                    <p class="text-muted">Acesse o sistema</p>
-                    <div style="font-size: 0.85em; background: #f8f9fa; padding: 10px; border-radius: 5px; margin-top: 10px;">
-                        <strong>Credenciais de teste:</strong><br>
-                        Admin: admin@admin.com / admin123<br>
-                        Cliente: maria.silva@email.com / cliente123<br>
-                        Cliente 2: joao.oliveira@email.com / cliente123
-                    </div>
-                </div>
-=======
 <!DOCTYPE html>
-<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
->>>>>>> 0134e271afe65384cd207ddd6f0cc728bf87e58c
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org" th:data-theme="${theme}">
 
 <head>
     <meta charset="UTF-8" />
@@ -53,6 +16,12 @@
             <div class="login-header">
                 <h2>E-commerce Login</h2>
                 <p class="text-muted">Acesse o sistema</p>
+                <div style="font-size: 0.85em; background: rgba(0, 0, 0, 0.05); padding: 10px; border-radius: 5px; margin-top: 10px;">
+                    <strong>Credenciais de teste:</strong><br>
+                    Admin: admin@admin.com / admin123<br>
+                    Cliente: maria.silva@email.com / cliente123<br>
+                    Cliente 2: joao.oliveira@email.com / cliente123
+                </div>
             </div>
 
             <div th:if="${param.error}" class="alert alert-danger">
@@ -117,10 +86,11 @@
 
     <footer class="main-footer">
         <p>
-            &copy; 2026 E-Commerce Premium - Pedro Zeferino
-            da Silva.
+            &copy; 2026 E-Commerce Premium - Pedro Zeferino da Silva.
         </p>
     </footer>
 </body>
+
+</html>
 
 </html>

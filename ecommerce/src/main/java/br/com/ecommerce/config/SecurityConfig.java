@@ -16,25 +16,6 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-<<<<<<< HEAD
-                .csrf(csrf -> csrf
-                        .ignoringRequestMatchers(request -> request.getRequestURI().contains("h2-console"))
-                        .ignoringRequestMatchers("/api/**")) // Mantém CSRF ativo para Thymeleaf, ignorando apenas API e H2
-                .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin())) // Habilita frames para o console H2
-                .authorizeHttpRequests(auth -> auth
-                        // 1. Arquivos estáticos e H2 liberados
-                        .requestMatchers(request -> request.getRequestURI().contains("h2-console")).permitAll()
-                        .requestMatchers("/api/auth/**", "/api/clientes", "/swagger-ui.html", "/swagger-ui/**",
-                                "/api-docs/**", "/status", "/actuator/**", "/login",
-                                "/api/auth/login", "/static/**")
-                        .permitAll()
-                        // 2. Apenas a tela de login pública
-                        .requestMatchers("/login").permitAll()
-                        // 3. Páginas de compra (carrinho/checkout e pedidos) exigem usuário logado
-                        .requestMatchers("/checkout/**", "/pedidos/**").authenticated()
-                        // 4. Páginas de administração exigem papel de ADMIN
-                        .requestMatchers("/categorias/**", "/clientes/**", "/produtos/**", "/api/**").hasRole("ADMIN")
-=======
                 // Proteção CSRF ignorando endpoints de API e H2 Console
                 .csrf(csrf -> csrf
                         .ignoringRequestMatchers("/api/**", "/h2-console", "/h2-console/**")
@@ -50,7 +31,6 @@ public class SecurityConfig {
                         .requestMatchers("/checkout", "/checkout/**", "/pedidos", "/pedidos/**").authenticated()
                         // 4. Páginas de administração exigem papel de ADMIN
                         .requestMatchers("/categorias/**", "/clientes/**", "/produtos/**", "/produtos").hasRole("ADMIN")
->>>>>>> 0134e271afe65384cd207ddd6f0cc728bf87e58c
                         // 5. O Restante (incluindo "/" e "/home") exige autenticação obrigatória
                         .anyRequest().authenticated())
 

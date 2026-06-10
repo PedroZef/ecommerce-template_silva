@@ -1,34 +1,15 @@
 package br.com.ecommerce.controller;
 
-<<<<<<< HEAD
-import br.com.ecommerce.exception.EstoqueInsuficienteException;
-import br.com.ecommerce.model.Cliente;
-import br.com.ecommerce.model.ItemPedido;
-import br.com.ecommerce.model.Pedido;
-import br.com.ecommerce.model.Produto;
-import br.com.ecommerce.service.ClienteService;
-import br.com.ecommerce.service.PedidoService;
-import br.com.ecommerce.service.ProdutoService;
-import br.com.ecommerce.model.FormaPagamento;
+import java.util.ArrayList;
+import java.util.List;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-=======
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
->>>>>>> 0134e271afe65384cd207ddd6f0cc728bf87e58c
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-<<<<<<< HEAD
-import lombok.RequiredArgsConstructor;
-import java.util.ArrayList;
-import java.util.List;
-=======
-
 import br.com.ecommerce.exception.EstoqueInsuficienteException;
 import br.com.ecommerce.model.Cliente;
 import br.com.ecommerce.model.ItemPedido;
@@ -38,7 +19,7 @@ import br.com.ecommerce.model.Produto;
 import br.com.ecommerce.service.ClienteService;
 import br.com.ecommerce.service.PedidoService;
 import br.com.ecommerce.service.ProdutoService;
->>>>>>> 0134e271afe65384cd207ddd6f0cc728bf87e58c
+import lombok.RequiredArgsConstructor;
 
 @Controller
 @RequiredArgsConstructor
@@ -98,7 +79,6 @@ public class PedidoController {
     @PostMapping("/checkout/comprar")
     public String processarCheckout(
             @RequestParam(value = "clienteId", required = false) Long clienteId,
-            @RequestParam("formaPagamento") FormaPagamento formaPagamento,
             @RequestParam(value = "produtoId", required = false) List<Long> produtoIds,
             @RequestParam(value = "quantidade", required = false) List<Integer> quantidades,
             @RequestParam("meioPagamento") MeioPagamento meioPagamento,
@@ -140,9 +120,6 @@ public class PedidoController {
             // 2. Instancia o Pedido
             Pedido pedido = new Pedido();
             pedido.setCliente(cliente);
-<<<<<<< HEAD
-            pedido.setFormaPagamento(formaPagamento);
-=======
             pedido.setMeioPagamento(meioPagamento);
             switch (meioPagamento) {
                 case CARTAO_CREDITO -> {
@@ -166,7 +143,6 @@ public class PedidoController {
                     pedido.setDetalhesPagamento("Boleto Bancário (3 dias úteis)");
                 }
             }
->>>>>>> 0134e271afe65384cd207ddd6f0cc728bf87e58c
 
             // 3. Monta os itens do pedido
             for (int i = 0; i < produtoIds.size(); i++) {
