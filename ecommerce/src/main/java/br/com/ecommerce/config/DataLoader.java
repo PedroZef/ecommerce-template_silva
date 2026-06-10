@@ -21,6 +21,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class DataLoader implements CommandLineRunner {
 
+<<<<<<< HEAD
     private final CategoriaRepository categoriaRepository;
     private final ProdutoRepository produtoRepository;
     private final ClienteRepository clienteRepository;
@@ -30,6 +31,31 @@ public class DataLoader implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         System.out.println("====== INICIANDO POPULAÇÃO IDEMPOTENTE DO BANCO DE DADOS ======");
+=======
+    @Autowired
+    private CategoriaRepository categoriaRepository;
+
+    @Autowired
+    private ProdutoRepository produtoRepository;
+
+    @Autowired
+    private ClienteRepository clienteRepository;
+
+    @Autowired
+    private UsuarioRepository usuarioRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @Override
+    public void run(String... args) throws Exception {
+        // Criar usuários do sistema se não existirem
+        if (usuarioRepository.count() == 0) {
+            Usuario admin = new Usuario();
+            admin.setEmail("admin@admin.com");
+            admin.setSenha(passwordEncoder.encode("admin123"));
+            admin.setRole("ROLE_ADMIN");
+>>>>>>> 0134e271afe65384cd207ddd6f0cc728bf87e58c
 
         // 1. Criar usuários do sistema de forma segura
         criarUsuarioSeNaoExistir("admin@admin.com", "admin123", "ROLE_ADMIN");
@@ -37,6 +63,7 @@ public class DataLoader implements CommandLineRunner {
         criarUsuarioSeNaoExistir("joao.oliveira@email.com", "cliente123", "ROLE_USER");
         criarUsuarioSeNaoExistir("ana.souza@email.com", "cliente123", "ROLE_USER");
 
+<<<<<<< HEAD
         // 2. Criar Categorias de forma segura
         Categoria eletronicos = criarCategoriaSeNaoExistir("Eletrônicos");
         Categoria roupas = criarCategoriaSeNaoExistir("Roupas");
@@ -67,6 +94,10 @@ public class DataLoader implements CommandLineRunner {
             usuario.setRole(role);
             usuarioRepository.save(usuario);
             System.out.println("Usuário criado: " + email);
+=======
+            usuarioRepository.saveAll(Arrays.asList(admin, cliente));
+            System.out.println("====== USUÁRIOS DE EXEMPLO CRIADOS ======");
+>>>>>>> 0134e271afe65384cd207ddd6f0cc728bf87e58c
         }
     }
 

@@ -1,5 +1,6 @@
 .main-footer {
     text-align: center;
+<<<<<<< HEAD
     padding: 1.5rem 1rem;
     position: relative; /* Removido o fixed para não sobrepor o conteúdo */
     width: 100%;
@@ -20,4 +21,10 @@
         padding: 1rem;
         font-size: 0.8rem;
     }
+=======
+    padding: 2rem 0;
+    margin-top: auto;
+    color: var(--primary);
+    font-size: 0.85rem;
+>>>>>>> 0134e271afe65384cd207ddd6f0cc728bf87e58c
 }

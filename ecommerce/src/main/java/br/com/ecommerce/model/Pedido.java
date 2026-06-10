@@ -30,8 +30,19 @@ public class Pedido {
     private OrderStatus status;
 
     @Enumerated(EnumType.STRING)
+<<<<<<< HEAD
     @Column(name = "forma_pagamento", nullable = false, length = 20)
     private FormaPagamento formaPagamento = FormaPagamento.PIX;
+=======
+    @Column(name = "meio_pagamento", length = 30)
+    private MeioPagamento meioPagamento;
+
+    @Column(name = "parcelas")
+    private Integer parcelas;
+
+    @Column(name = "detalhes_pagamento", length = 100)
+    private String detalhesPagamento;
+>>>>>>> 0134e271afe65384cd207ddd6f0cc728bf87e58c
 
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal total = BigDecimal.ZERO;
@@ -53,7 +64,7 @@ public class Pedido {
 
     public void recalcularTotal() {
         this.total = itens.stream()
-                .map(item -> item.getPrecoUnitario().multiply(BigDecimal.valueOf(item.getQuantidade())))
+                .map(ItemPedido::getSubtotal)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
     

@@ -90,3 +90,26 @@ mvnw.cmd test
 ```
 
 - Ainda em desevolvimento
+ Toda a análise detalhada e o plano passo a passo com exemplos práticos de código foram compilados no artefato
+  abaixo:
+
+  👉 analise_projeto_melhorias.md
+  ──────
+  ### Principais Pontos Abordados no Plano:
+
+  1. Prevenção de Condições de Corrida: Implementação de Pessimistic Locking no ProdutoRepository.java para garantir
+que
+  transações simultâneas de checkout no PedidoService.java não resultem em estoques negativos.
+  2. Desacoplamento com DTOs: Criação de Data Transfer Objects para evitar referências circulares e não expor
+  entidades JPA diretamente nas requisições/respostas das rotas REST.
+  3. Ajustes de Segurança: Correção de regras de precedência de rotas no SecurityConfig.java e parametrização de
+  credenciais de inicialização.
+  4. Tratamento Global de Erros: Configuração de um  @RestControllerAdvice  para retornar mensagens JSON padronizadas
+  e limpas para a API REST.
+  5. Documentação e UI/UX: Inclusão do Swagger/OpenAPI e melhorias práticas nas páginas Thymeleaf, como a prevenção
+  de cliques duplos e autocomplete.
+
+  ### ❓ Decisões Necessárias:
+
+  • Qual destas melhorias você gostaria de implementar primeiro? Se desejar, posso começar a refatorar o controle de
+  estoque com o bloqueio pessimista ou configurar os DTOs.

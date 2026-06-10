@@ -1,5 +1,6 @@
 package br.com.ecommerce.controller;
 
+<<<<<<< HEAD
 import br.com.ecommerce.exception.EstoqueInsuficienteException;
 import br.com.ecommerce.model.Cliente;
 import br.com.ecommerce.model.ItemPedido;
@@ -11,15 +12,33 @@ import br.com.ecommerce.service.ProdutoService;
 import br.com.ecommerce.model.FormaPagamento;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+=======
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+>>>>>>> 0134e271afe65384cd207ddd6f0cc728bf87e58c
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+<<<<<<< HEAD
 import lombok.RequiredArgsConstructor;
 import java.util.ArrayList;
 import java.util.List;
+=======
+
+import br.com.ecommerce.exception.EstoqueInsuficienteException;
+import br.com.ecommerce.model.Cliente;
+import br.com.ecommerce.model.ItemPedido;
+import br.com.ecommerce.model.MeioPagamento;
+import br.com.ecommerce.model.Pedido;
+import br.com.ecommerce.model.Produto;
+import br.com.ecommerce.service.ClienteService;
+import br.com.ecommerce.service.PedidoService;
+import br.com.ecommerce.service.ProdutoService;
+>>>>>>> 0134e271afe65384cd207ddd6f0cc728bf87e58c
 
 @Controller
 @RequiredArgsConstructor
@@ -82,6 +101,12 @@ public class PedidoController {
             @RequestParam("formaPagamento") FormaPagamento formaPagamento,
             @RequestParam(value = "produtoId", required = false) List<Long> produtoIds,
             @RequestParam(value = "quantidade", required = false) List<Integer> quantidades,
+            @RequestParam("meioPagamento") MeioPagamento meioPagamento,
+            @RequestParam(value = "numCartao", required = false) String numCartao,
+            @RequestParam(value = "nomeCartao", required = false) String nomeCartao,
+            @RequestParam(value = "validadeCartao", required = false) String validadeCartao,
+            @RequestParam(value = "cvvCartao", required = false) String cvvCartao,
+            @RequestParam(value = "parcelas", required = false) Integer parcelas,
             RedirectAttributes redirectAttributes) {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -115,7 +140,33 @@ public class PedidoController {
             // 2. Instancia o Pedido
             Pedido pedido = new Pedido();
             pedido.setCliente(cliente);
+<<<<<<< HEAD
             pedido.setFormaPagamento(formaPagamento);
+=======
+            pedido.setMeioPagamento(meioPagamento);
+            switch (meioPagamento) {
+                case CARTAO_CREDITO -> {
+                    pedido.setParcelas(parcelas != null ? parcelas : 1);
+                    String cleanNum = numCartao != null ? numCartao.replaceAll("\\D", "") : "";
+                    String last4 = cleanNum.length() >= 4 ? cleanNum.substring(cleanNum.length() - 4) : "xxxx";
+                    pedido.setDetalhesPagamento(String.format("Crédito final %s - %dx", last4, pedido.getParcelas()));
+                }
+                case CARTAO_DEBITO -> {
+                    pedido.setParcelas(null);
+                    String cleanNum = numCartao != null ? numCartao.replaceAll("\\D", "") : "";
+                    String last4 = cleanNum.length() >= 4 ? cleanNum.substring(cleanNum.length() - 4) : "xxxx";
+                    pedido.setDetalhesPagamento(String.format("Débito final %s", last4));
+                }
+                case PIX -> {
+                    pedido.setParcelas(null);
+                    pedido.setDetalhesPagamento("Pix Simulado");
+                }
+                case BOLETO -> {
+                    pedido.setParcelas(null);
+                    pedido.setDetalhesPagamento("Boleto Bancário (3 dias úteis)");
+                }
+            }
+>>>>>>> 0134e271afe65384cd207ddd6f0cc728bf87e58c
 
             // 3. Monta os itens do pedido
             for (int i = 0; i < produtoIds.size(); i++) {
