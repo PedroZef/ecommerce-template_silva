@@ -6,6 +6,9 @@
             th:replace="~{layout :: layout-container(~{:: #produtos-content}, 'produtos')}"
         >
             <div id="produtos-content">
+                <!-- CSS específico da página -->
+                <link rel="stylesheet" th:href="@{/css/produtos.css}" />
+
                 <!-- Cabeçalho da Página -->
                 <div class="page-header">
                     <div class="page-title">
@@ -52,14 +55,13 @@
                     <!-- Formulário (Esquerda) -->
                     <div class="glass-panel">
                         <div class="form-header">
-                            <svg
+                            <svg class="produtos-style-1"
                                 viewBox="0 0 24 24"
                                 width="18"
                                 height="18"
                                 fill="none"
                                 stroke="currentColor"
                                 stroke-width="2"
-                                style="color: var(--primary)"
                             >
                                 <polygon
                                     points="12 2 2 7 12 12 22 7 12 2"
@@ -184,17 +186,11 @@
                                 ></span>
                             </div>
 
-                            <div
-                                style="
-                                    display: flex;
-                                    gap: 0.5rem;
-                                    margin-top: 1.5rem;
-                                "
+                            <div class="produtos-style-2"
                             >
                                 <button
                                     type="submit"
-                                    class="btn btn-primary"
-                                    style="flex: 1"
+                                    class="btn btn-primary produtos-style-3"
                                 >
                                     Salvar Produto
                                 </button>
@@ -212,14 +208,13 @@
                     <!-- Tabela de Produtos (Direita) -->
                     <div class="glass-panel">
                         <div class="form-header">
-                            <svg
+                            <svg class="produtos-style-4"
                                 viewBox="0 0 24 24"
                                 width="18"
                                 height="18"
                                 fill="none"
                                 stroke="currentColor"
                                 stroke-width="2"
-                                style="color: var(--accent)"
                             >
                                 <path
                                     d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"
@@ -233,16 +228,12 @@
                             <table class="custom-table">
                                 <thead>
                                     <tr>
-                                        <th style="width: 60px">ID</th>
+                                        <th class="produtos-style-5">ID</th>
                                         <th>Nome / Descrição</th>
                                         <th>Categoria</th>
                                         <th>Preço</th>
                                         <th>Estoque</th>
-                                        <th
-                                            style="
-                                                width: 150px;
-                                                text-align: center;
-                                            "
+                                        <th class="produtos-style-6"
                                         >
                                             Ações
                                         </th>
@@ -252,26 +243,12 @@
                                     <tr th:each="prod : ${produtos}">
                                         <td th:text="${prod.id}">1</td>
                                         <td>
-                                            <div
-                                                style="
-                                                    font-weight: 600;
-                                                    color: white;
-                                                "
+                                            <div class="produtos-style-7"
                                                 th:text="${prod.nome}"
                                             >
                                                 Smartphone
                                             </div>
-                                            <div
-                                                style="
-                                                    font-size: 0.75rem;
-                                                    color: var(
-                                                        --text-secondary
-                                                    );
-                                                    max-width: 250px;
-                                                    white-space: nowrap;
-                                                    overflow: hidden;
-                                                    text-overflow: ellipsis;
-                                                "
+                                            <div class="produtos-style-8"
                                                 th:text="${prod.descricao}"
                                             >
                                                 Descrição
@@ -300,8 +277,7 @@
                                         </td>
                                         <td>
                                             <div
-                                                class="btn-action-group"
-                                                style="justify-content: center"
+                                                class="btn-action-group produtos-style-9"
                                             >
                                                 <a
                                                     th:href="@{/produtos/editar/{id}(id=${prod.id})}"
@@ -324,12 +300,8 @@
                                         </td>
                                     </tr>
                                     <tr th:if="${#lists.isEmpty(produtos)}">
-                                        <td
+                                        <td class="produtos-style-10"
                                             colspan="6"
-                                            style="
-                                                text-align: center;
-                                                color: var(--text-secondary);
-                                            "
                                         >
                                             Nenhum produto cadastrado no
                                             catálogo.

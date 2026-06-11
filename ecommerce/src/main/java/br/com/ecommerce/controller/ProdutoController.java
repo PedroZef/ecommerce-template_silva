@@ -1,25 +1,31 @@
 package br.com.ecommerce.controller;
 
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
 import br.com.ecommerce.model.Produto;
 import br.com.ecommerce.service.CategoriaService;
 import br.com.ecommerce.service.ProdutoService;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequestMapping("/produtos")
 public class ProdutoController {
 
-    @Autowired
-    private ProdutoService produtoService;
+    private final ProdutoService produtoService;
+    private final CategoriaService categoriaService;
 
-    @Autowired
-    private CategoriaService categoriaService;
+    public ProdutoController(ProdutoService produtoService, CategoriaService categoriaService) {
+        this.produtoService = produtoService;
+        this.categoriaService = categoriaService;
+    }
 
     @GetMapping
     public String listar(Model model) {
@@ -34,12 +40,13 @@ public class ProdutoController {
 
     @PostMapping("/salvar")
     public String salvar(@Valid @ModelAttribute("produto") Produto produto,
-                         BindingResult result,
-                         RedirectAttributes redirectAttributes) {
+            BindingResult result,
+            RedirectAttributes redirectAttributes) {
         if (result.hasErrors()) {
             redirectAttributes.addFlashAttribute("org.springframework.validation.BindingResult.produto", result);
             redirectAttributes.addFlashAttribute("produto", produto);
-            redirectAttributes.addFlashAttribute("error", "Erro ao salvar o produto. Verifique se os dados estão preenchidos corretamente.");
+            redirectAttributes.addFlashAttribute("error",
+                    "Erro ao salvar o produto. Verifique se os dados estão preenchidos corretamente.");
             return "redirect:/produtos";
         }
 
@@ -74,7 +81,8 @@ public class ProdutoController {
             produtoService.excluir(id);
             redirectAttributes.addFlashAttribute("success", "Produto excluído com sucesso!");
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Este produto não pode ser excluído porque está associado a itens de pedidos realizados.");
+            redirectAttributes.addFlashAttribute("error",
+                    "Este produto não pode ser excluído porque está associado a itens de pedidos realizados.");
         }
         return "redirect:/produtos";
     }

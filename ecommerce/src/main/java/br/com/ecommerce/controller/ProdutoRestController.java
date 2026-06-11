@@ -3,7 +3,6 @@ package br.com.ecommerce.controller;
 import br.com.ecommerce.model.Produto;
 import br.com.ecommerce.service.ProdutoService;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,8 +15,11 @@ import java.util.List;
 @RequestMapping("/api/produtos")
 public class ProdutoRestController {
 
-    @Autowired
-    private ProdutoService produtoService;
+    private final ProdutoService produtoService;
+
+    public ProdutoRestController(ProdutoService produtoService) {
+        this.produtoService = produtoService;
+    }
 
     // Retorna a lista de todos os produtos em JSON
     // Acessar: GET http://localhost:8080/api/produtos

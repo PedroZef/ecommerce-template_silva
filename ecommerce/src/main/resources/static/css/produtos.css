@@ -1,0 +1,49 @@
+.produtos-style-1 {
+    color: var(--primary)
+}
+
+.produtos-style-2 {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1.5rem;
+}
+
+.produtos-style-3 {
+    flex: 1
+}
+
+.produtos-style-4 {
+    color: var(--accent)
+}
+
+.produtos-style-5 {
+    width: 60px
+}
+
+.produtos-style-6 {
+    width: 150px;
+    text-align: center;
+}
+
+.produtos-style-7 {
+    font-weight: 600;
+    color: white;
+}
+
+.produtos-style-8 {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    max-width: 250px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.produtos-style-9 {
+    justify-content: center
+}
+
+.produtos-style-10 {
+    text-align: center;
+    color: var(--text-secondary);
+}

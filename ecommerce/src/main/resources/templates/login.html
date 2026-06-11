@@ -16,7 +16,7 @@
             <div class="login-header">
                 <h2>E-commerce Login</h2>
                 <p class="text-muted">Acesse o sistema</p>
-                <div style="font-size: 0.85em; background: rgba(0, 0, 0, 0.05); padding: 10px; border-radius: 5px; margin-top: 10px;">
+                <div class="login-style-1">
                     <strong>Credenciais de teste:</strong><br>
                     Admin: admin@admin.com / admin123<br>
                     Cliente: maria.silva@email.com / cliente123<br>
@@ -40,7 +40,7 @@
                     <label for="password" class="form-label">Senha</label>
                     <input type="password" class="form-input" id="password" name="password" required />
                 </div>
-                <div style="margin-top: 1.5rem;">
+                <div class="login-style-2">
                     <button type="submit" class="btn btn-primary">
                         Entrar
                     </button>
@@ -48,12 +48,12 @@
             </form>
 
             <!-- Separador e Alternador de Tema -->
-            <div style="margin: 1.5rem 0; border-top: 1px solid var(--border-glass);"></div>
-            <div class="theme-toggle-container" style="border-top: none; padding-top: 0; margin-top: 0;">
+            <div class="login-style-3"></div>
+            <div class="theme-toggle-container login-style-4">
                 <form th:action="@{/theme/toggle}" method="post">
                     <input type="hidden" name="currentTheme" th:value="${theme}" />
                     <button type="submit" class="theme-toggle-btn"
-                        th:title="${theme == 'light' ? 'Mudar para Tema Escuro' : 'Mudar para Tema Claro'}">
+                        th:title="${theme == 'light' ? 'Mudar para Dark' : 'Mudar para Light'}">
                         <div class="theme-toggle-track">
                             <div class="theme-toggle-thumb">
                                 <!-- Ícone Sol (Light Mode) -->
@@ -77,7 +77,7 @@
                             </div>
                         </div>
                         <span class="theme-toggle-text"
-                            th:text="${theme == 'light' ? 'Tema Claro' : 'Tema Escuro'}">Tema Escuro</span>
+                            th:text="${theme == 'light' ? 'Light' : 'Dark'}">Dark</span>
                     </button>
                 </form>
             </div>

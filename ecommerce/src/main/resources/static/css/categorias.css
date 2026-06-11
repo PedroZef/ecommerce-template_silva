@@ -1,0 +1,35 @@
+.categorias-style-1 {
+    color: var(--primary);
+}
+
+.categorias-style-2 {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1.5rem;
+}
+
+.categorias-style-3 {
+    flex: 1;
+}
+
+.categorias-style-4 {
+    color: var(--accent);
+}
+
+.categorias-style-5 {
+    width: 80px;
+}
+
+.categorias-style-6 {
+    width: 180px;
+    text-align: center;
+}
+
+.categorias-style-7 {
+    justify-content: center;
+}
+
+.categorias-style-8 {
+    text-align: center;
+    color: var(--text-secondary);
+}

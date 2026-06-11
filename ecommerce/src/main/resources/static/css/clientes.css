@@ -1,0 +1,39 @@
+.clientes-style-1 {
+    color: var(--primary);
+}
+
+.clientes-style-2 {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1.5rem;
+}
+
+.clientes-style-3 {
+    flex: 1;
+}
+
+.clientes-style-4 {
+    color: var(--accent);
+}
+
+.clientes-style-5 {
+    width: 60px;
+}
+
+.clientes-style-6 {
+    width: 150px;
+    text-align: center;
+}
+
+.clientes-style-7 {
+    color: white;
+}
+
+.clientes-style-8 {
+    justify-content: center;
+}
+
+.clientes-style-9 {
+    text-align: center;
+    color: var(--text-secondary);
+}

@@ -1,21 +1,28 @@
 package br.com.ecommerce.controller;
 
-import br.com.ecommerce.model.Cliente;
-import br.com.ecommerce.service.ClienteService;
-import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import br.com.ecommerce.model.Cliente;
+import br.com.ecommerce.service.ClienteService;
+import jakarta.validation.Valid;
 
 @Controller
 @RequestMapping("/clientes")
 public class ClienteController {
 
-    @Autowired
-    private ClienteService service;
+    private final ClienteService service;
+
+    public ClienteController(ClienteService service) {
+        this.service = service;
+    }
 
     @GetMapping
     public String listar(Model model) {
@@ -29,18 +36,20 @@ public class ClienteController {
 
     @PostMapping("/salvar")
     public String salvar(@Valid @ModelAttribute("cliente") Cliente cliente,
-                         BindingResult result,
-                         RedirectAttributes redirectAttributes) {
+            BindingResult result,
+            RedirectAttributes redirectAttributes) {
         if (result.hasErrors()) {
             redirectAttributes.addFlashAttribute("org.springframework.validation.BindingResult.cliente", result);
             redirectAttributes.addFlashAttribute("cliente", cliente);
-            redirectAttributes.addFlashAttribute("error", "Erro ao salvar cliente. Verifique as validações dos campos.");
+            redirectAttributes.addFlashAttribute("error",
+                    "Erro ao salvar cliente. Verifique as validações dos campos.");
             return "redirect:/clientes";
         }
 
         try {
             service.salvar(cliente);
-            redirectAttributes.addFlashAttribute("success", "Cliente '" + cliente.getNome() + "' cadastrado com sucesso!");
+            redirectAttributes.addFlashAttribute("success",
+                    "Cliente '" + cliente.getNome() + "' cadastrado com sucesso!");
         } catch (IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute("org.springframework.validation.BindingResult.cliente", result);
             redirectAttributes.addFlashAttribute("cliente", cliente);
@@ -72,7 +81,8 @@ public class ClienteController {
             service.excluir(id);
             redirectAttributes.addFlashAttribute("success", "Cliente excluído com sucesso!");
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Este cliente não pode ser excluído porque possui histórico de pedidos no sistema.");
+            redirectAttributes.addFlashAttribute("error",
+                    "Este cliente não pode ser excluído porque possui histórico de pedidos no sistema.");
         }
         return "redirect:/clientes";
     }

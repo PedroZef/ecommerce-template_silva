@@ -1,222 +1,191 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR" xmlns:th="http://www.thymeleaf.org" th:data-theme="${theme}">
-    <head th:replace="~{layout :: head('Gerenciar Categorias')}"></head>
-    <body>
-        <div
-            th:replace="~{layout :: layout-container(~{:: #categorias-content}, 'categorias')}"
-        >
-            <div id="categorias-content">
-                <!-- Cabeçalho da Página -->
-                <div class="page-header">
-                    <div class="page-title">
-                        <h2>Gerenciar Categorias</h2>
-                        <p>
-                            Crie, edite e organize categorias do catálogo de
-                            produtos.
-                        </p>
-                    </div>
-                </div>
+  <head th:replace="~{layout :: head('Gerenciar Categorias')}"></head>
+  <body>
+    <div
+      th:replace="~{layout :: layout-container(~{:: #categorias-content}, 'categorias')}"
+    >
+      <div id="categorias-content">
+        <!-- CSS específico da página -->
+        <link rel="stylesheet" th:href="@{/css/categorias.css}" />
 
-                <!-- Alertas de Feedback -->
-                <div th:if="${success}" class="alert alert-success">
-                    <svg
-                        viewBox="0 0 24 24"
-                        width="20"
-                        height="20"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="2"
-                    >
-                        <polyline points="20 6 9 17 4 12"></polyline>
-                    </svg>
-                    <span th:text="${success}"></span>
-                </div>
-                <div th:if="${error}" class="alert alert-danger">
-                    <svg
-                        viewBox="0 0 24 24"
-                        width="20"
-                        height="20"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="2"
-                    >
-                        <circle cx="12" cy="12" r="10"></circle>
-                        <line x1="15" y1="9" x2="9" y2="15"></line>
-                        <line x1="9" y1="9" x2="15" y2="15"></line>
-                    </svg>
-                    <span th:text="${error}"></span>
-                </div>
-
-                <!-- Grid de Formulário + Listagem -->
-                <div class="form-grid-layout">
-                    <!-- Formulário (Esquerda) -->
-                    <div class="glass-panel">
-                        <div class="form-header">
-                            <svg
-                                viewBox="0 0 24 24"
-                                width="18"
-                                height="18"
-                                fill="none"
-                                stroke="currentColor"
-                                stroke-width="2"
-                                style="color: var(--primary)"
-                            >
-                                <path d="M12 5v14M5 12h14"></path>
-                            </svg>
-                            <span
-                                th:text="${categoria.id != null ? 'Editar Categoria' : 'Nova Categoria'}"
-                                >Nova Categoria</span
-                            >
-                        </div>
-
-                        <form
-                            th:action="@{/categorias/salvar}"
-                            th:object="${categoria}"
-                            method="post"
-                        >
-                            <!-- ID Oculto para Edições -->
-                            <input type="hidden" th:field="*{id}" />
-
-                            <div class="form-group">
-                                <label for="nome" class="form-label"
-                                    >Nome da Categoria</label
-                                >
-                                <input
-                                    type="text"
-                                    id="nome"
-                                    th:field="*{nome}"
-                                    class="form-input"
-                                    placeholder="Ex: Acessórios, Móveis"
-                                    required
-                                />
-                                <span
-                                    class="form-error"
-                                    th:if="${#fields.hasErrors('nome')}"
-                                    th:errors="*{nome}"
-                                ></span>
-                            </div>
-
-                            <div
-                                style="
-                                    display: flex;
-                                    gap: 0.5rem;
-                                    margin-top: 1.5rem;
-                                "
-                            >
-                                <button
-                                    type="submit"
-                                    class="btn btn-primary"
-                                    style="flex: 1"
-                                >
-                                    Salvar
-                                </button>
-                                <a
-                                    th:if="${categoria.id != null}"
-                                    th:href="@{/categorias}"
-                                    class="btn btn-outline"
-                                >
-                                    Cancelar
-                                </a>
-                            </div>
-                        </form>
-                    </div>
-
-                    <!-- Tabela de Categorias (Direita) -->
-                    <div class="glass-panel">
-                        <div class="form-header">
-                            <svg
-                                viewBox="0 0 24 24"
-                                width="18"
-                                height="18"
-                                fill="none"
-                                stroke="currentColor"
-                                stroke-width="2"
-                                style="color: var(--accent)"
-                            >
-                                <line x1="8" y1="6" x2="21" y2="6"></line>
-                                <line x1="8" y1="12" x2="21" y2="12"></line>
-                                <line x1="8" y1="18" x2="21" y2="18"></line>
-                                <line x1="3" y1="6" x2="3.01" y2="6"></line>
-                                <line x1="3" y1="12" x2="3.01" y2="12"></line>
-                                <line x1="3" y1="18" x2="3.01" y2="18"></line>
-                            </svg>
-                            Categorias Cadastradas
-                        </div>
-
-                        <div class="table-responsive">
-                            <table class="custom-table">
-                                <thead>
-                                    <tr>
-                                        <th style="width: 80px">ID</th>
-                                        <th>Nome da Categoria</th>
-                                        <th
-                                            style="
-                                                width: 180px;
-                                                text-align: center;
-                                            "
-                                        >
-                                            Ações
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr th:each="cat : ${categorias}">
-                                        <td th:text="${cat.id}">1</td>
-                                        <td>
-                                            <strong th:text="${cat.nome}"
-                                                >Eletrônicos</strong
-                                            >
-                                        </td>
-                                        <td>
-                                            <div
-                                                class="btn-action-group"
-                                                style="justify-content: center"
-                                            >
-                                                <a
-                                                    th:href="@{/categorias/editar/{id}(id=${cat.id})}"
-                                                    class="btn btn-outline btn-sm"
-                                                >
-                                                    Editar
-                                                </a>
-                                                <a
-                                                    th:href="@{/categorias/excluir/{id}(id=${cat.id})}"
-                                                    class="btn btn-danger-outline btn-sm"
-                                                    onclick="
-                                                        return confirm(
-                                                            'Deseja realmente excluir esta categoria?',
-                                                        );
-                                                    "
-                                                >
-                                                    Excluir
-                                                </a>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <tr th:if="${#lists.isEmpty(categorias)}">
-                                        <td
-                                            colspan="3"
-                                            style="
-                                                text-align: center;
-                                                color: var(--text-secondary);
-                                            "
-                                        >
-                                            Nenhuma categoria cadastrada no
-                                            sistema.
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <!-- Cabeçalho da Página -->
+        <div class="page-header">
+          <div class="page-title">
+            <h2>Gerenciar Categorias</h2>
+            <p>Crie, edite e organize categorias do catálogo de produtos.</p>
+          </div>
         </div>
-        <!-- Footer Global -->
-        <footer class="main-footer">
-            <p>
-                &copy; 2026 E-Commerce_T3 - Sprint MVC - Pedro Zeferino da
-                Silva.
-            </p>
-        </footer>
-    </body>
+
+        <!-- Alertas de Feedback -->
+        <div th:if="${success}" class="alert alert-success">
+          <svg
+            viewBox="0 0 24 24"
+            width="20"
+            height="20"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+          <span th:text="${success}"></span>
+        </div>
+        <div th:if="${error}" class="alert alert-danger">
+          <svg
+            viewBox="0 0 24 24"
+            width="20"
+            height="20"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="15" y1="9" x2="9" y2="15"></line>
+            <line x1="9" y1="9" x2="15" y2="15"></line>
+          </svg>
+          <span th:text="${error}"></span>
+        </div>
+
+        <!-- Grid de Formulário + Listagem -->
+        <div class="form-grid-layout">
+          <!-- Formulário (Esquerda) -->
+          <div class="glass-panel">
+            <div class="form-header">
+              <svg
+                class="categorias-style-1"
+                viewBox="0 0 24 24"
+                width="18"
+                height="18"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M12 5v14M5 12h14"></path>
+              </svg>
+              <span
+                th:text="${categoria.id != null ? 'Editar Categoria' : 'Nova Categoria'}"
+                >Nova Categoria</span
+              >
+            </div>
+
+            <form
+              th:action="@{/categorias/salvar}"
+              th:object="${categoria}"
+              method="post"
+            >
+              <!-- ID Oculto para Edições -->
+              <input type="hidden" th:field="*{id}" />
+
+              <div class="form-group">
+                <label for="nome" class="form-label">Nome da Categoria</label>
+                <input
+                  type="text"
+                  id="nome"
+                  th:field="*{nome}"
+                  class="form-input"
+                  placeholder="Ex: Acessórios, Móveis"
+                  required
+                />
+                <span
+                  class="form-error"
+                  th:if="${#fields.hasErrors('nome')}"
+                  th:errors="*{nome}"
+                ></span>
+              </div>
+
+              <div class="categorias-style-2">
+                <button
+                  type="submit"
+                  class="btn btn-primary categorias-style-3"
+                >
+                  Salvar
+                </button>
+                <a
+                  th:if="${categoria.id != null}"
+                  th:href="@{/categorias}"
+                  class="btn btn-outline"
+                >
+                  Cancelar
+                </a>
+              </div>
+            </form>
+          </div>
+
+          <!-- Tabela de Categorias (Direita) -->
+          <div class="glass-panel">
+            <div class="form-header">
+              <svg
+                class="categorias-style-4"
+                viewBox="0 0 24 24"
+                width="18"
+                height="18"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <line x1="8" y1="6" x2="21" y2="6"></line>
+                <line x1="8" y1="12" x2="21" y2="12"></line>
+                <line x1="8" y1="18" x2="21" y2="18"></line>
+                <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                <line x1="3" y1="18" x2="3.01" y2="18"></line>
+              </svg>
+              Categorias Cadastradas
+            </div>
+
+            <div class="table-responsive">
+              <table class="custom-table">
+                <thead>
+                  <tr>
+                    <th class="categorias-style-5">ID</th>
+                    <th>Nome da Categoria</th>
+                    <th class="categorias-style-6">Ações</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr th:each="cat : ${categorias}">
+                    <td th:text="${cat.id}">1</td>
+                    <td>
+                      <strong th:text="${cat.nome}">Eletrônicos</strong>
+                    </td>
+                    <td>
+                      <div class="btn-action-group categorias-style-7">
+                        <a
+                          th:href="@{/categorias/editar/{id}(id=${cat.id})}"
+                          class="btn btn-outline btn-sm"
+                        >
+                          Editar
+                        </a>
+                        <a
+                          th:href="@{/categorias/excluir/{id}(id=${cat.id})}"
+                          class="btn btn-danger-outline btn-sm"
+                          onclick="
+                            return confirm(
+                              'Deseja realmente excluir esta categoria?',
+                            );
+                          "
+                        >
+                          Excluir
+                        </a>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr th:if="${#lists.isEmpty(categorias)}">
+                    <td class="categorias-style-8" colspan="3">
+                      Nenhuma categoria cadastrada no sistema.
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Footer Global -->
+    <footer class="main-footer">
+      <p>&copy; 2026 E-Commerce_T3 - Sprint MVC - Pedro Zeferino da Silva.</p>
+    </footer>
+  </body>
 </html>

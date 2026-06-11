@@ -1,21 +1,28 @@
 package br.com.ecommerce.controller;
 
-import br.com.ecommerce.model.Categoria;
-import br.com.ecommerce.service.CategoriaService;
-import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import br.com.ecommerce.model.Categoria;
+import br.com.ecommerce.service.CategoriaService;
+import jakarta.validation.Valid;
 
 @Controller
 @RequestMapping("/categorias")
 public class CategoriaController {
 
-    @Autowired
-    private CategoriaService service;
+    private final CategoriaService service;
+
+    public CategoriaController(CategoriaService service) {
+        this.service = service;
+    }
 
     @GetMapping
     public String listar(Model model) {
@@ -29,8 +36,8 @@ public class CategoriaController {
 
     @PostMapping("/salvar")
     public String salvar(@Valid @ModelAttribute("categoria") Categoria categoria,
-                         BindingResult result,
-                         RedirectAttributes redirectAttributes) {
+            BindingResult result,
+            RedirectAttributes redirectAttributes) {
         if (result.hasErrors()) {
             redirectAttributes.addFlashAttribute("org.springframework.validation.BindingResult.categoria", result);
             redirectAttributes.addFlashAttribute("categoria", categoria);
@@ -40,7 +47,8 @@ public class CategoriaController {
 
         try {
             service.salvar(categoria);
-            redirectAttributes.addFlashAttribute("success", "Categoria '" + categoria.getNome() + "' salva com sucesso!");
+            redirectAttributes.addFlashAttribute("success",
+                    "Categoria '" + categoria.getNome() + "' salva com sucesso!");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Erro ao salvar categoria: " + e.getMessage());
         }
@@ -68,7 +76,8 @@ public class CategoriaController {
             service.excluir(id);
             redirectAttributes.addFlashAttribute("success", "Categoria excluída com sucesso!");
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Esta categoria não pode ser excluída porque possui produtos associados a ela.");
+            redirectAttributes.addFlashAttribute("error",
+                    "Esta categoria não pode ser excluída porque possui produtos associados a ela.");
         }
         return "redirect:/categorias";
     }
