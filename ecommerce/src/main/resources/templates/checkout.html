@@ -1,709 +1,431 @@
 <!doctype html>
 <html lang="pt-BR" xmlns:th="http://www.thymeleaf.org" th:data-theme="${theme}">
-  <head th:replace="~{layout :: head('Simulador Transacional ACID')}"></head>
 
-  <body>
-    <div
-      th:replace="~{layout :: layout-container(~{:: #checkout-content}, 'checkout')}"
-    >
-      <div id="checkout-content">
-        <link rel="stylesheet" th:href="@{/css/checkout.css}" />
+<head th:replace="~{layout :: head('Simulador Transacional ACID')}"></head>
 
-        <!-- Cabeçalho da Página -->
-        <div class="page-header">
-          <div class="page-title">
-            <h2>Simulador Interativo de Transação ACID</h2>
-            <p>
-              Crie cestas de compras e observe a reação atômica do banco de
-              dados (Commit de sucesso ou Rollback de falha).
-            </p>
-          </div>
+<body>
+  <div th:replace="~{layout :: layout-container(~{:: #checkout-content}, 'checkout')}">
+    <div id="checkout-content">
+      <link rel="stylesheet" th:href="@{/css/checkout.css}" />
+
+      <!-- Cabeçalho da Página -->
+      <div class="page-header">
+        <div class="page-title">
+          <h2>Simulador Interativo de Transação ACID</h2>
+          <p>
+            Crie cestas de compras e observe a reação atômica do banco de
+            dados (Commit de sucesso ou Rollback de falha).
+          </p>
         </div>
+      </div>
 
-        <!-- Painel de Feedback Genérico de Erro -->
-        <div th:if="${error}" class="alert alert-danger">
-          <svg
-            viewBox="0 0 24 24"
-            width="20"
-            height="20"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
+      <!-- Painel de Feedback Genérico de Erro -->
+      <div th:if="${error}" class="alert alert-danger">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="15" y1="9" x2="9" y2="15"></line>
+          <line x1="9" y1="9" x2="15" y2="15"></line>
+        </svg>
+        <span th:text="${error}"></span>
+      </div>
+
+      <!-- Feedback Didático de ROLLBACK (Transação Cancelada) -->
+      <div th:if="${acidError}" class="acid-alert-box">
+        <h4>
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="3">
             <circle cx="12" cy="12" r="10"></circle>
-            <line x1="15" y1="9" x2="9" y2="15"></line>
-            <line x1="9" y1="9" x2="15" y2="15"></line>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
           </svg>
-          <span th:text="${error}"></span>
+          Transação Revertida com Sucesso (Rollback)!
+        </h4>
+        <p th:text="${acidError}"></p>
+
+        <div class="acid-explanation">
+          <strong>Explicação Didática (ACID - Atomicidade):</strong><br />
+          O método <code>criarPedido()</code> possui a anotação Spring
+          <code>@Transactional</code>. Quando o sistema detectou estoque
+          insuficiente para um produto do carrinho, ele lançou a
+          <code>EstoqueInsuficienteException</code>. Por ser uma exceção de
+          runtime, o JPA interceptou o erro e realizou o
+          <strong>Rollback total</strong> automático. <br /><br />
+          <strong>Resultado no Banco:</strong> Nenhum registro de pedido foi
+          gravado, nenhuma fatura foi gerada e
+          <strong>todos os estoques parciais que haviam sido decrementados de
+            outros produtos retornaram aos valores originais
+            instantaneamente</strong>.
         </div>
+      </div>
 
-        <!-- Feedback Didático de ROLLBACK (Transação Cancelada) -->
-        <div th:if="${acidError}" class="acid-alert-box">
-          <h4>
-            <svg
-              viewBox="0 0 24 24"
-              width="22"
-              height="22"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="3"
-            >
-              <circle cx="12" cy="12" r="10"></circle>
-              <line x1="12" y1="8" x2="12" y2="12"></line>
-              <line x1="12" y1="16" x2="12.01" y2="16"></line>
-            </svg>
-            Transação Revertida com Sucesso (Rollback)!
-          </h4>
-          <p th:text="${acidError}"></p>
+      <!-- Formulário de Checkout Dinâmico -->
+      <form th:action="@{/checkout/comprar}" method="post">
+        <div class="checkout-grid">
+          <!-- Lado Esquerdo: Seleção do Cliente e Produtos -->
+          <div style="display: flex; flex-direction: column; gap: 2rem">
+            <!-- Painel de Cliente e Produtos -->
+            <div class="glass-panel" style="margin-bottom: 0">
+              <div class="form-header">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"
+                  style="color: var(--primary)">
+                  <path
+                    d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z">
+                  </path>
+                </svg>
+                Passo 1: Quem está comprando?
+              </div>
 
-          <div class="acid-explanation">
-            <strong>Explicação Didática (ACID - Atomicidade):</strong><br />
-            O método <code>criarPedido()</code> possui a anotação Spring
-            <code>@Transactional</code>. Quando o sistema detectou estoque
-            insuficiente para um produto do carrinho, ele lançou a
-            <code>EstoqueInsuficienteException</code>. Por ser uma exceção de
-            runtime, o JPA interceptou o erro e realizou o
-            <strong>Rollback total</strong> automático. <br /><br />
-            <strong>Resultado no Banco:</strong> Nenhum registro de pedido foi
-            gravado, nenhuma fatura foi gerada e
-            <strong
-              >todos os estoques parciais que haviam sido decrementados de
-              outros produtos retornaram aos valores originais
-              instantaneamente</strong
-            >.
-          </div>
-        </div>
-
-        <!-- Formulário de Checkout Dinâmico -->
-        <form th:action="@{/checkout/comprar}" method="post">
-          <div class="checkout-grid">
-            <!-- Lado Esquerdo: Seleção do Cliente e Produtos -->
-            <div style="display: flex; flex-direction: column; gap: 2rem">
-              <!-- Painel de Cliente e Produtos -->
-              <div class="glass-panel" style="margin-bottom: 0">
-                <div class="form-header">
-                  <svg
-                    viewBox="0 0 24 24"
-                    width="18"
-                    height="18"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    style="color: var(--primary)"
-                  >
-                    <path
-                      d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"
-                    ></path>
-                  </svg>
-                  Passo 1: Quem está comprando?
-                </div>
-
-                <!-- Seleção ou Exibição do Cliente -->
-                <div class="form-group" style="margin-bottom: 2rem">
-                  <th:block th:if="${loggedCliente != null}">
-                    <label class="form-label">Cliente Identificado</label>
-                    <input
-                      type="hidden"
-                      name="clienteId"
-                      th:value="${loggedCliente.id}"
-                    />
-                    <div
-                      class="form-control-static"
-                      style="
+              <!-- Seleção ou Exibição do Cliente -->
+              <div class="form-group" style="margin-bottom: 2rem">
+                <th:block th:if="${loggedCliente != null}">
+                  <label class="form-label">Cliente Identificado</label>
+                  <input type="hidden" name="clienteId" th:value="${loggedCliente.id}" />
+                  <div class="form-control-static" style="
                         color: var(--text-primary);
                         font-weight: bold;
                         background: rgba(255, 255, 255, 0.05);
                         padding: 10px;
                         border-radius: 5px;
-                      "
-                    >
-                      <span th:text="${loggedCliente.nome}">Maria Silva</span>
-                      <span
-                        style="
+                      ">
+                    <span th:text="${loggedCliente.nome}">Maria Silva</span>
+                    <span style="
                           color: var(--text-secondary);
                           font-size: 0.85em;
                           display: block;
-                        "
-                        th:text="'CPF: ' + ${loggedCliente.cpf} + ' | Email: ' + ${loggedCliente.email}"
-                        >CPF: 123.456.789-00</span
-                      >
-                    </div>
-                  </th:block>
-                  <th:block th:if="${loggedCliente == null}">
-                    <label for="clienteId" class="form-label"
-                      >Selecione o Cliente (Modo Admin)</label
-                    >
-                    <select
-                      id="clienteId"
-                      name="clienteId"
-                      class="form-select"
-                      required
-                    >
-                      <option value="" disabled selected>
-                        -- Escolha um Cliente --
-                      </option>
-                      <option
-                        th:each="cli : ${clientes}"
-                        th:value="${cli.id}"
-                        th:text="${cli.nome} + ' (CPF: ' + ${cli.cpf} + ')'"
-                        th:selected="${cli.id == selectedClienteId}"
-                      ></option>
-                    </select>
-                  </th:block>
-                </div>
+                        " th:text="'CPF: ' + ${loggedCliente.cpf} + ' | Email: ' + ${loggedCliente.email}">CPF:
+                      123.456.789-00</span>
+                  </div>
+                </th:block>
+                <th:block th:if="${loggedCliente == null}">
+                  <label for="clienteId" class="form-label">Selecione o Cliente (Modo Admin)</label>
+                  <select id="clienteId" name="clienteId" class="form-select" required>
+                    <option value="" disabled selected>
+                      -- Escolha um Cliente --
+                    </option>
+                    <option th:each="cli : ${clientes}" th:value="${cli.id}"
+                      th:text="${cli.nome} + ' (CPF: ' + ${cli.cpf} + ')'" th:selected="${cli.id == selectedClienteId}">
+                    </option>
+                  </select>
+                </th:block>
+              </div>
 
-                <div class="form-header">
-                  <svg
-                    viewBox="0 0 24 24"
-                    width="18"
-                    height="18"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    style="color: var(--accent)"
-                  >
-                    <circle cx="9" cy="21" r="1"></circle>
-                    <circle cx="20" cy="21" r="1"></circle>
-                    <path
-                      d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"
-                    ></path>
-                  </svg>
-                  Passo 2: Monte o Carrinho de Compras
-                </div>
-                <p
-                  style="
+              <div class="form-header">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"
+                  style="color: var(--accent)">
+                  <circle cx="9" cy="21" r="1"></circle>
+                  <circle cx="20" cy="21" r="1"></circle>
+                  <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                </svg>
+                Passo 2: Monte o Carrinho de Compras
+              </div>
+              <p style="
                     color: var(--text-secondary);
                     font-size: 0.85rem;
                     margin-bottom: 1.5rem;
-                  "
-                >
-                  Selecione a quantidade desejada de cada produto. Para testar o
-                  **Rollback**, digite uma quantidade que
-                  <strong>supere</strong> o estoque disponível em verde!
-                </p>
+                  ">
+                Selecione a quantidade desejada de cada produto. Para testar o
+                **Rollback**, digite uma quantidade que
+                <strong>supere</strong> o estoque disponível em verde!
+              </p>
 
-                <!-- Lista de Produtos e Seleção de Quantidade -->
-                <div class="checkout-products-list">
-                  <div
-                    th:each="prod : ${produtos}"
-                    class="checkout-product-card"
-                  >
-                    <div class="checkout-product-info">
-                      <!-- Input oculto para enviar o ID de todos os produtos do formulário -->
-                      <input
-                        type="hidden"
-                        name="produtoId"
-                        th:value="${prod.id}"
-                      />
-                      <h4 th:text="${prod.nome}">Nome do Produto</h4>
-                      <p
-                        th:text="'R$ ' + ${#numbers.formatDecimal(prod.preco, 1, 'POINT', 2, 'COMMA')}"
-                      >
-                        R$ 99.90
-                      </p>
-                      <span
-                        class="checkout-stock-badge"
-                        th:classappend="${prod.estoque == 0 ? 'out' : (prod.estoque < 5 ? 'low' : '')}"
-                        th:text="'Estoque: ' + ${prod.estoque}"
-                        >Estoque: 10</span
-                      >
-                    </div>
-                    <div class="checkout-qty-control">
-                      <label class="form-label" style="margin: 0">Qtd:</label>
-                      <input
-                        type="number"
-                        name="quantidade"
-                        class="checkout-qty-input"
-                        min="0"
-                        value="0"
-                        th:max="${prod.estoque + 20}"
-                      />
-                      <!-- Permite digitar mais que o estoque para forçar rollback nas aulas -->
-                    </div>
+              <!-- Lista de Produtos e Seleção de Quantidade -->
+              <div class="checkout-products-list">
+                <div th:each="prod : ${produtos}" class="checkout-product-card">
+                  <div class="checkout-product-info">
+                    <!-- Input oculto para enviar o ID de todos os produtos do formulário -->
+                    <input type="hidden" name="produtoId" th:value="${prod.id}" />
+                    <h4 th:text="${prod.nome}">Nome do Produto</h4>
+                    <p th:text="'R$ ' + ${#numbers.formatDecimal(prod.preco, 1, 'POINT', 2, 'COMMA')}">
+                      R$ 99.90
+                    </p>
+                    <span class="checkout-stock-badge"
+                      th:classappend="${prod.estoque == 0 ? 'out' : (prod.estoque < 5 ? 'low' : '')}"
+                      th:text="'Estoque: ' + ${prod.estoque}">Estoque: 10</span>
                   </div>
-                  <div
-                    th:if="${#lists.isEmpty(produtos)}"
-                    style="
+                  <div class="checkout-qty-control">
+                    <label class="form-label" style="margin: 0">Qtd:</label>
+                    <input type="number" name="quantidade" class="checkout-qty-input" min="0" value="0"
+                      th:max="${prod.estoque + 20}" />
+                    <!-- Permite digitar mais que o estoque para forçar rollback nas aulas -->
+                  </div>
+                </div>
+                <div th:if="${#lists.isEmpty(produtos)}" style="
                       text-align: center;
                       color: var(--text-secondary);
                       padding: 1.5rem 0;
-                    "
-                  >
-                    Nenhum produto cadastrado para compra. Cadastre na tela de
-                    <strong>Produtos</strong>.
-                  </div>
+                    ">
+                  Nenhum produto cadastrado para compra. Cadastre na tela de
+                  <strong>Produtos</strong>.
+                </div>
+              </div>
+            </div>
+
+            <!-- Painel de Forma de Pagamento (Passo 3) -->
+            <div class="glass-panel" style="margin-bottom: 0">
+              <div class="form-header">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"
+                  style="color: var(--accent)">
+                  <rect x="2" y="5" width="20" height="14" rx="2" ry="2"></rect>
+                  <line x1="2" y1="10" x2="22" y2="10"></line>
+                </svg>
+                Passo 3: Escolha a Forma de Pagamento
+              </div>
+
+              <input type="hidden" id="meioPagamento" name="meioPagamento" value="CARTAO_CREDITO" />
+
+              <!-- Seletor de Opções de Pagamento -->
+              <div class="payment-selector">
+                <div class="payment-card-option active" id="tab-credito"
+                  onclick="selectPaymentMethod('CARTAO_CREDITO')">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
+                    <line x1="1" y1="10" x2="23" y2="10"></line>
+                  </svg>
+                  <span>Crédito</span>
+                </div>
+                <div class="payment-card-option" id="tab-debito" onclick="selectPaymentMethod('CARTAO_DEBITO')">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
+                    <line x1="1" y1="10" x2="23" y2="10"></line>
+                  </svg>
+                  <span>Débito</span>
+                </div>
+                <div class="payment-card-option" id="tab-pix" onclick="selectPaymentMethod('PIX')">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2L2 12l10 10 10-10L12 2z"></path>
+                    <path d="M12 7l-5 5 5 5 5-5-5-5z"></path>
+                  </svg>
+                  <span>Pix</span>
+                </div>
+                <div class="payment-card-option" id="tab-boleto" onclick="selectPaymentMethod('BOLETO')">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <rect x="3" y="4" width="18" height="16" rx="2" ry="2"></rect>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                    <line x1="7" y1="15" x2="7.01" y2="15"></line>
+                    <line x1="11" y1="15" x2="13" y2="15"></line>
+                  </svg>
+                  <span>Boleto</span>
                 </div>
               </div>
 
-              <!-- Painel de Forma de Pagamento (Passo 3) -->
-              <div class="glass-panel" style="margin-bottom: 0">
-                <div class="form-header">
-                  <svg
-                    viewBox="0 0 24 24"
-                    width="18"
-                    height="18"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    style="color: var(--accent)"
-                  >
-                    <rect
-                      x="2"
-                      y="5"
-                      width="20"
-                      height="14"
-                      rx="2"
-                      ry="2"
-                    ></rect>
-                    <line x1="2" y1="10" x2="22" y2="10"></line>
-                  </svg>
-                  Passo 3: Escolha a Forma de Pagamento
-                </div>
-
-                <input
-                  type="hidden"
-                  id="meioPagamento"
-                  name="meioPagamento"
-                  value="CARTAO_CREDITO"
-                />
-
-                <!-- Seletor de Opções de Pagamento -->
-                <div class="payment-selector">
-                  <div
-                    class="payment-card-option active"
-                    id="tab-credito"
-                    onclick="selectPaymentMethod('CARTAO_CREDITO')"
-                  >
-                    <svg
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    >
-                      <rect
-                        x="1"
-                        y="4"
-                        width="22"
-                        height="16"
-                        rx="2"
-                        ry="2"
-                      ></rect>
-                      <line x1="1" y1="10" x2="23" y2="10"></line>
-                    </svg>
-                    <span>Crédito</span>
-                  </div>
-                  <div
-                    class="payment-card-option"
-                    id="tab-debito"
-                    onclick="selectPaymentMethod('CARTAO_DEBITO')"
-                  >
-                    <svg
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    >
-                      <rect
-                        x="1"
-                        y="4"
-                        width="22"
-                        height="16"
-                        rx="2"
-                        ry="2"
-                      ></rect>
-                      <line x1="1" y1="10" x2="23" y2="10"></line>
-                    </svg>
-                    <span>Débito</span>
-                  </div>
-                  <div
-                    class="payment-card-option"
-                    id="tab-pix"
-                    onclick="selectPaymentMethod('PIX')"
-                  >
-                    <svg
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                    >
-                      <path d="M12 2L2 12l10 10 10-10L12 2z"></path>
-                      <path d="M12 7l-5 5 5 5 5-5-5-5z"></path>
-                    </svg>
-                    <span>Pix</span>
-                  </div>
-                  <div
-                    class="payment-card-option"
-                    id="tab-boleto"
-                    onclick="selectPaymentMethod('BOLETO')"
-                  >
-                    <svg
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    >
-                      <rect
-                        x="3"
-                        y="4"
-                        width="18"
-                        height="16"
-                        rx="2"
-                        ry="2"
-                      ></rect>
-                      <line x1="3" y1="10" x2="21" y2="10"></line>
-                      <line x1="7" y1="15" x2="7.01" y2="15"></line>
-                      <line x1="11" y1="15" x2="13" y2="15"></line>
-                    </svg>
-                    <span>Boleto</span>
-                  </div>
-                </div>
-
-                <!-- Form de Cartões (Crédito/Débito) -->
-                <div id="card-form-wrapper" class="payment-form-container">
-                  <!-- Visualizador de Cartão Interativo -->
-                  <div class="virtual-card-wrapper">
-                    <div class="virtual-card" id="virtual-card">
-                      <!-- Frente -->
-                      <div class="card-face card-front">
-                        <div
-                          style="
+              <!-- Form de Cartões (Crédito/Débito) -->
+              <div id="card-form-wrapper" class="payment-form-container">
+                <!-- Visualizador de Cartão Interativo -->
+                <div class="virtual-card-wrapper">
+                  <div class="virtual-card" id="virtual-card">
+                    <!-- Frente -->
+                    <div class="card-face card-front">
+                      <div style="
                             display: flex;
                             justify-content: space-between;
                             align-items: center;
                             width: 100%;
-                          "
-                        >
-                          <div class="card-chip"></div>
-                          <div class="card-brand" id="card-brand-display">
-                            VISA
+                          ">
+                        <div class="card-chip"></div>
+                        <div class="card-brand" id="card-brand-display">
+                          VISA
+                        </div>
+                      </div>
+                      <div class="card-number" id="card-num-display">
+                        •••• •••• •••• ••••
+                      </div>
+                      <div class="card-footer">
+                        <div>
+                          <div style="font-size: 0.55rem; opacity: 0.7">
+                            Titular
+                          </div>
+                          <div class="card-holder-name" id="card-name-display">
+                            NOME DO TITULAR
                           </div>
                         </div>
-                        <div class="card-number" id="card-num-display">
-                          •••• •••• •••• ••••
-                        </div>
-                        <div class="card-footer">
-                          <div>
-                            <div style="font-size: 0.55rem; opacity: 0.7">
-                              Titular
-                            </div>
-                            <div
-                              class="card-holder-name"
-                              id="card-name-display"
-                            >
-                              NOME DO TITULAR
-                            </div>
-                          </div>
-                          <div>
-                            <div
-                              style="
+                        <div>
+                          <div style="
                                 font-size: 0.55rem;
                                 opacity: 0.7;
                                 text-align: right;
-                              "
-                            >
-                              Validade
-                            </div>
-                            <div
-                              class="card-expiry-val"
-                              id="card-expiry-display"
-                            >
-                              MM/AA
-                            </div>
+                              ">
+                            Validade
+                          </div>
+                          <div class="card-expiry-val" id="card-expiry-display">
+                            MM/AA
                           </div>
                         </div>
                       </div>
-                      <!-- Verso -->
-                      <div class="card-face card-back">
-                        <div class="card-magnetic-strip"></div>
-                        <div class="card-cvv-strip" id="card-cvv-display">
-                          •••
-                        </div>
-                        <div
-                          style="
+                    </div>
+                    <!-- Verso -->
+                    <div class="card-face card-back">
+                      <div class="card-magnetic-strip"></div>
+                      <div class="card-cvv-strip" id="card-cvv-display">
+                        •••
+                      </div>
+                      <div style="
                             padding: 0 1rem;
                             font-size: 0.55rem;
                             opacity: 0.6;
                             line-height: 1.3;
                             margin-top: 0.5rem;
                             text-align: center;
-                          "
-                        >
-                          Simulador didático de transação ACID no banco de
-                          dados.
-                        </div>
+                          ">
+                        Simulador didático de transação ACID no banco de
+                        dados.
                       </div>
                     </div>
                   </div>
+                </div>
 
-                  <!-- Inputs do Cartão -->
-                  <div class="form-group">
-                    <label for="numCartao" class="form-label"
-                      >Número do Cartão</label
-                    >
-                    <input
-                      type="text"
-                      id="numCartao"
-                      name="numCartao"
-                      class="form-input"
-                      placeholder="0000 0000 0000 0000"
-                      maxlength="19"
-                      autocomplete="off"
-                    />
-                  </div>
-                  <div class="form-group">
-                    <label for="nomeCartao" class="form-label"
-                      >Nome Impresso no Cartão</label
-                    >
-                    <input
-                      type="text"
-                      id="nomeCartao"
-                      name="nomeCartao"
-                      class="form-input"
-                      placeholder="MARIA DA SILVA"
-                      autocomplete="off"
-                    />
-                  </div>
-                  <div
-                    style="
+                <!-- Inputs do Cartão -->
+                <div class="form-group">
+                  <label for="numCartao" class="form-label">Número do Cartão</label>
+                  <input type="text" id="numCartao" name="numCartao" class="form-input"
+                    placeholder="0000 0000 0000 0000" maxlength="19" autocomplete="off" />
+                </div>
+                <div class="form-group">
+                  <label for="nomeCartao" class="form-label">Nome Impresso no Cartão</label>
+                  <input type="text" id="nomeCartao" name="nomeCartao" class="form-input" placeholder="MARIA DA SILVA"
+                    autocomplete="off" />
+                </div>
+                <div style="
                       display: grid;
                       grid-template-columns: 1fr 1fr;
                       gap: 1rem;
-                    "
-                  >
-                    <div class="form-group">
-                      <label for="validadeCartao" class="form-label"
-                        >Validade</label
-                      >
-                      <input
-                        type="text"
-                        id="validadeCartao"
-                        name="validadeCartao"
-                        class="form-input"
-                        placeholder="MM/AA"
-                        maxlength="5"
-                        autocomplete="off"
-                      />
-                    </div>
-                    <div class="form-group">
-                      <label for="cvvCartao" class="form-label">CVV</label>
-                      <input
-                        type="text"
-                        id="cvvCartao"
-                        name="cvvCartao"
-                        class="form-input"
-                        placeholder="123"
-                        maxlength="4"
-                        autocomplete="off"
-                      />
-                    </div>
+                    ">
+                  <div class="form-group">
+                    <label for="validadeCartao" class="form-label">Validade</label>
+                    <input type="text" id="validadeCartao" name="validadeCartao" class="form-input" placeholder="MM/AA"
+                      maxlength="5" autocomplete="off" />
                   </div>
-
-                  <!-- Parcelamento (Apenas Crédito) -->
-                  <div class="form-group" id="parcelas-group">
-                    <label for="parcelas" class="form-label"
-                      >Parcelamento</label
-                    >
-                    <select id="parcelas" name="parcelas" class="form-select">
-                      <option value="1">1x de R$ 0,00 (Sem Juros)</option>
-                      <option value="2">2x (Sem Juros)</option>
-                      <option value="3">3x (Sem Juros)</option>
-                      <option value="4">4x (Com Juros)</option>
-                      <option value="5">5x (Com Juros)</option>
-                      <option value="6">6x (Com Juros)</option>
-                    </select>
+                  <div class="form-group">
+                    <label for="cvvCartao" class="form-label">CVV</label>
+                    <input type="text" id="cvvCartao" name="cvvCartao" class="form-input" placeholder="123"
+                      maxlength="4" autocomplete="off" />
                   </div>
                 </div>
 
-                <!-- Pix Info -->
-                <div
-                  id="pix-info-wrapper"
-                  class="pix-container"
-                  style="display: none"
-                >
-                  <div class="pix-qr-box">
-                    <svg
-                      width="140"
-                      height="140"
-                      viewBox="0 0 100 100"
-                      style="background: white"
-                    >
-                      <!-- Border markers -->
-                      <rect
-                        x="5"
-                        y="5"
-                        width="20"
-                        height="20"
-                        fill="none"
-                        stroke="#000"
-                        stroke-width="4"
-                      />
-                      <rect x="10" y="10" width="10" height="10" fill="#000" />
-                      <rect
-                        x="75"
-                        y="5"
-                        width="20"
-                        height="20"
-                        fill="none"
-                        stroke="#000"
-                        stroke-width="4"
-                      />
-                      <rect x="80" y="10" width="10" height="10" fill="#000" />
-                      <rect
-                        x="5"
-                        y="75"
-                        width="20"
-                        height="20"
-                        fill="none"
-                        stroke="#000"
-                        stroke-width="4"
-                      />
-                      <rect x="10" y="80" width="10" height="10" fill="#000" />
+                <!-- Parcelamento (Apenas Crédito) -->
+                <div class="form-group" id="parcelas-group">
+                  <label for="parcelas" class="form-label">Parcelamento</label>
+                  <select id="parcelas" name="parcelas" class="form-select">
+                    <option value="1">1x de R$ 0,00 (Sem Juros)</option>
+                    <option value="2">2x (Sem Juros)</option>
+                    <option value="3">3x (Sem Juros)</option>
+                    <option value="4">4x (Com Juros)</option>
+                    <option value="5">5x (Com Juros)</option>
+                    <option value="6">6x (Com Juros)</option>
+                  </select>
+                </div>
+              </div>
 
-                      <!-- Simulated QR code noise -->
-                      <rect x="35" y="5" width="5" height="15" fill="#000" />
-                      <rect x="45" y="10" width="15" height="5" fill="#000" />
-                      <rect x="65" y="20" width="5" height="5" fill="#000" />
-                      <rect x="5" y="35" width="15" height="5" fill="#000" />
-                      <rect x="25" y="30" width="10" height="10" fill="#000" />
-                      <rect x="65" y="35" width="10" height="5" fill="#000" />
-                      <rect x="85" y="30" width="10" height="15" fill="#000" />
-                      <rect x="30" y="65" width="5" height="25" fill="#000" />
-                      <rect x="45" y="75" width="20" height="5" fill="#000" />
-                      <rect x="70" y="60" width="15" height="15" fill="#000" />
-                      <rect x="55" y="85" width="15" height="5" fill="#000" />
-                      <rect x="80" y="80" width="10" height="10" fill="#000" />
+              <!-- Pix Info -->
+              <div id="pix-info-wrapper" class="pix-container" style="display: none">
+                <div class="pix-qr-box">
+                  <svg width="140" height="140" viewBox="0 0 100 100" style="background: white">
+                    <!-- Border markers -->
+                    <rect x="5" y="5" width="20" height="20" fill="none" stroke="#000" stroke-width="4" />
+                    <rect x="10" y="10" width="10" height="10" fill="#000" />
+                    <rect x="75" y="5" width="20" height="20" fill="none" stroke="#000" stroke-width="4" />
+                    <rect x="80" y="10" width="10" height="10" fill="#000" />
+                    <rect x="5" y="75" width="20" height="20" fill="none" stroke="#000" stroke-width="4" />
+                    <rect x="10" y="80" width="10" height="10" fill="#000" />
 
-                      <!-- Pix symbol -->
-                      <g transform="translate(38,38) scale(0.24)">
-                        <path
-                          d="M50 0 L100 50 L50 100 L0 50 Z"
-                          fill="#32b5a4"
-                        />
-                        <path d="M50 15 L85 50 L50 85 L15 50 Z" fill="#fff" />
-                        <path
-                          d="M50 25 L75 50 L50 75 L25 50 Z"
-                          fill="#32b5a4"
-                        />
-                      </g>
-                    </svg>
+                    <!-- Simulated QR code noise -->
+                    <rect x="35" y="5" width="5" height="15" fill="#000" />
+                    <rect x="45" y="10" width="15" height="5" fill="#000" />
+                    <rect x="65" y="20" width="5" height="5" fill="#000" />
+                    <rect x="5" y="35" width="15" height="5" fill="#000" />
+                    <rect x="25" y="30" width="10" height="10" fill="#000" />
+                    <rect x="65" y="35" width="10" height="5" fill="#000" />
+                    <rect x="85" y="30" width="10" height="15" fill="#000" />
+                    <rect x="30" y="65" width="5" height="25" fill="#000" />
+                    <rect x="45" y="75" width="20" height="5" fill="#000" />
+                    <rect x="70" y="60" width="15" height="15" fill="#000" />
+                    <rect x="55" y="85" width="15" height="5" fill="#000" />
+                    <rect x="80" y="80" width="10" height="10" fill="#000" />
+
+                    <!-- Pix symbol -->
+                    <g transform="translate(38,38) scale(0.24)">
+                      <path d="M50 0 L100 50 L50 100 L0 50 Z" fill="#32b5a4" />
+                      <path d="M50 15 L85 50 L50 85 L15 50 Z" fill="#fff" />
+                      <path d="M50 25 L75 50 L50 75 L25 50 Z" fill="#32b5a4" />
+                    </g>
+                  </svg>
+                </div>
+                <div class="pix-instructions">
+                  Escaneie o QR Code acima ou copie a chave Pix Copia e Cola
+                  abaixo para simular o pagamento.
+                </div>
+                <div class="pix-key-copy">
+                  <input type="text" id="pix-key-val" class="pix-key-input"
+                    value="00020101021226870014br.gov.bcb.pix2565emv.simulado.key.random.12345" readonly />
+                  <button type="button" id="pix-copy-btn" class="pix-btn-copy" onclick="copyPixKey()">
+                    Copiar Código
+                  </button>
+                </div>
+                <div class="pix-timer">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="12 6 12 12 16 14"></polyline>
+                  </svg>
+                  <span>Código expira em 10:00</span>
+                </div>
+              </div>
+
+              <!-- Boleto Info -->
+              <div id="boleto-info-wrapper" class="boleto-container" style="display: none">
+                <div class="barcode-box">
+                  <div class="barcode-lines">
+                    <div style="width: 4px"></div>
+                    <div style="width: 2px"></div>
+                    <div style="width: 6px"></div>
+                    <div style="width: 2px"></div>
+                    <div style="width: 3px"></div>
+                    <div style="width: 5px"></div>
+                    <div style="width: 2px"></div>
+                    <div style="width: 4px"></div>
+                    <div style="width: 3px"></div>
+                    <div style="width: 2px"></div>
+                    <div style="width: 6px"></div>
+                    <div style="width: 2px"></div>
+                    <div style="width: 3px"></div>
+                    <div style="width: 4px"></div>
+                    <div style="width: 2px"></div>
+                    <div style="width: 5px"></div>
+                    <div style="width: 3px"></div>
+                    <div style="width: 2px"></div>
+                    <div style="width: 4px"></div>
+                    <div style="width: 2px"></div>
                   </div>
-                  <div class="pix-instructions">
-                    Escaneie o QR Code acima ou copie a chave Pix Copia e Cola
-                    abaixo para simular o pagamento.
-                  </div>
-                  <div class="pix-key-copy">
-                    <input
-                      type="text"
-                      id="pix-key-val"
-                      class="pix-key-input"
-                      value="00020101021226870014br.gov.bcb.pix2565emv.simulado.key.random.12345"
-                      readonly
-                    />
-                    <button
-                      type="button"
-                      id="pix-copy-btn"
-                      class="pix-btn-copy"
-                      onclick="copyPixKey()"
-                    >
-                      Copiar Código
-                    </button>
-                  </div>
-                  <div class="pix-timer">
-                    <svg
-                      viewBox="0 0 24 24"
-                      width="16"
-                      height="16"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    >
-                      <circle cx="12" cy="12" r="10"></circle>
-                      <polyline points="12 6 12 12 16 14"></polyline>
-                    </svg>
-                    <span>Código expira em 10:00</span>
+                  <div class="barcode-number">
+                    34191.09008 61713.957308 71444.640008 1 97010000000000
                   </div>
                 </div>
-
-                <!-- Boleto Info -->
-                <div
-                  id="boleto-info-wrapper"
-                  class="boleto-container"
-                  style="display: none"
-                >
-                  <div class="barcode-box">
-                    <div class="barcode-lines">
-                      <div style="width: 4px"></div>
-                      <div style="width: 2px"></div>
-                      <div style="width: 6px"></div>
-                      <div style="width: 2px"></div>
-                      <div style="width: 3px"></div>
-                      <div style="width: 5px"></div>
-                      <div style="width: 2px"></div>
-                      <div style="width: 4px"></div>
-                      <div style="width: 3px"></div>
-                      <div style="width: 2px"></div>
-                      <div style="width: 6px"></div>
-                      <div style="width: 2px"></div>
-                      <div style="width: 3px"></div>
-                      <div style="width: 4px"></div>
-                      <div style="width: 2px"></div>
-                      <div style="width: 5px"></div>
-                      <div style="width: 3px"></div>
-                      <div style="width: 2px"></div>
-                      <div style="width: 4px"></div>
-                      <div style="width: 2px"></div>
-                    </div>
-                    <div class="barcode-number">
-                      34191.09008 61713.957308 71444.640008 1 97010000000000
-                    </div>
-                  </div>
-                  <div class="pix-instructions" style="text-align: center">
-                    O boleto será gerado após a finalização da compra. O prazo
-                    de vencimento é de 3 dias úteis.
-                  </div>
+                <div class="pix-instructions" style="text-align: center">
+                  O boleto será gerado após a finalização da compra. O prazo
+                  de vencimento é de 3 dias úteis.
                 </div>
               </div>
             </div>
+          </div>
 
-            <!-- Lado Direito: Informações Didáticas e Ação -->
-            <div
-              class="glass-panel"
-              style="
+          <!-- Lado Direito: Informações Didáticas e Ação -->
+          <div class="glass-panel" style="
                 display: flex;
                 flex-direction: column;
                 justify-content: space-between;
-              "
-            >
-              <div>
-                <div
-                  class="form-header"
-                  style="border-bottom-color: rgba(99, 102, 241, 0.2)"
-                >
-                  <svg
-                    viewBox="0 0 24 24"
-                    width="18"
-                    height="18"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    style="color: var(--success)"
-                  >
-                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
-                  </svg>
-                  Passo 4: Executar Transação
-                </div>
+              ">
+            <div>
+              <div class="form-header" style="border-bottom-color: rgba(99, 102, 241, 0.2)">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"
+                  style="color: var(--success)">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                  <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                </svg>
+                Passo 4: Executar Transação
+              </div>
 
-                <div
-                  style="
+              <div style="
                     background: rgba(99, 102, 241, 0.05);
                     border: 1px solid rgba(99, 102, 241, 0.15);
                     border-radius: 10px;
@@ -712,10 +434,8 @@
                     color: var(--text-secondary);
                     margin-bottom: 1.5rem;
                     line-height: 1.6;
-                  "
-                >
-                  <h5
-                    style="
+                  ">
+                <h5 style="
                       color: var(--text-primary);
                       font-size: 0.95rem;
                       font-family: var(--font-heading);
@@ -723,111 +443,95 @@
                       display: flex;
                       align-items: center;
                       gap: 0.35rem;
-                    "
-                  >
-                    <span
-                      style="
+                    ">
+                  <span style="
                         display: inline-block;
                         width: 6px;
                         height: 6px;
                         border-radius: 50%;
                         background: var(--accent);
-                      "
-                    ></span>
-                    Instruções de Aula Prática:
-                  </h5>
-                  <ol
-                    style="
+                      "></span>
+                  Instruções de Aula Prática:
+                </h5>
+                <ol style="
                       margin-left: 1.2rem;
                       display: flex;
                       flex-direction: column;
                       gap: 0.5rem;
-                    "
-                  >
-                    <li>
-                      <strong>Caso 1 (COMMIT de Sucesso):</strong>
-                      Monte uma cesta com quantidades dentro do estoque
-                      disponível. A transação será finalizada, os estoques
-                      reduzidos no banco e você será direcionado para o
-                      Histórico de Pedidos com a mensagem de confirmação.
-                    </li>
-                    <li>
-                      <strong>Caso 2 (ROLLBACK de Falha):</strong>
-                      Adicione uma quantidade
-                      <strong>maior</strong> do que o estoque de qualquer
-                      produto (Ex: se há 10 unidades de Smartphone, solicite
-                      12). O banco de dados iniciará a compra e cancelará o
-                      processo ao perceber o limite excedido, restabelecendo o
-                      estado anterior integralmente.
-                    </li>
-                  </ol>
-                </div>
+                    ">
+                  <li>
+                    <strong>Caso 1 (COMMIT de Sucesso):</strong>
+                    Monte uma cesta com quantidades dentro do estoque
+                    disponível. A transação será finalizada, os estoques
+                    reduzidos no banco e você será direcionado para o
+                    Histórico de Pedidos com a mensagem de confirmação.
+                  </li>
+                  <li>
+                    <strong>Caso 2 (ROLLBACK de Falha):</strong>
+                    Adicione uma quantidade
+                    <strong>maior</strong> do que o estoque de qualquer
+                    produto (Ex: se há 10 unidades de Smartphone, solicite
+                    12). O banco de dados iniciará a compra e cancelará o
+                    processo ao perceber o limite excedido, restabelecendo o
+                    estado anterior integralmente.
+                  </li>
+                </ol>
+              </div>
 
-                <div
-                  style="
+              <div style="
                     color: var(--text-secondary);
                     font-size: 0.85rem;
                     line-height: 1.5;
-                  "
-                >
-                  <p style="margin-bottom: 0.5rem">
-                    <strong>Comportamento ACID esperado:</strong>
-                  </p>
-                  <ul
-                    style="
+                  ">
+                <p style="margin-bottom: 0.5rem">
+                  <strong>Comportamento ACID esperado:</strong>
+                </p>
+                <ul style="
                       margin-left: 1.2rem;
                       display: flex;
                       flex-direction: column;
                       gap: 0.25rem;
-                    "
-                  >
-                    <li>
-                      <strong>Atomicidade:</strong> O pedido só é salvo se TODOS
-                      os produtos forem deduzidos com sucesso.
-                    </li>
-                    <li>
-                      <strong>Consistência:</strong> Os estoques não podem ficar
-                      negativos no banco de dados.
-                    </li>
-                    <li>
-                      <strong>Durabilidade:</strong>
-                      Pedidos bem-sucedidos persistem mesmo se o servidor for
-                      desligado.
-                    </li>
-                  </ul>
-                </div>
+                    ">
+                  <li>
+                    <strong>Atomicidade:</strong> O pedido só é salvo se TODOS
+                    os produtos forem deduzidos com sucesso.
+                  </li>
+                  <li>
+                    <strong>Consistência:</strong> Os estoques não podem ficar
+                    negativos no banco de dados.
+                  </li>
+                  <li>
+                    <strong>Durabilidade:</strong>
+                    Pedidos bem-sucedidos persistem mesmo se o servidor for
+                    desligado.
+                  </li>
+                </ul>
               </div>
+            </div>
 
-              <div style="margin-top: 2rem">
-                <button
-                  type="submit"
-                  class="btn btn-primary"
-                  style="
+            <div style="margin-top: 2rem">
+              <button type="submit" class="btn btn-primary" style="
                     width: 100%;
                     padding: 1rem 1.5rem;
                     font-size: 1.1rem;
                     box-shadow: 0 5px 20px var(--primary-glow);
-                  "
-                >
-                  Finalizar Checkout (Transação)
-                  <svg
-                    viewBox="0 0 24 24"
-                    width="18"
-                    height="18"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                  >
-                    <line x1="5" y1="12" x2="19" y2="12"></line>
-                    <polyline points="12 5 19 12 12 19"></polyline>
-                  </svg>
-                </button>
-              </div>
+                  ">
+                Finalizar Checkout (Transação)
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                  <polyline points="12 5 19 12 12 19"></polyline>
+                </svg>
+              </button>
             </div>
           </div>
-        </form>
-      </div>
+        </div>
+      </form>
     </div>
-    <script th:src="@{/js/checkout.js}"></script>
-  </body>
+  </div>
+  <footer class="main-footer">
+    <p>&copy; 2026 E-Commerce Premium - Pedro Zeferino da Silva.</p>
+  </footer>
+  <script th:src="@{/js/checkout.js}"></script>
+</body>
+
 </html>
