@@ -1,11 +1,11 @@
 package br.com.ecommerce.repository;
 
-import br.com.ecommerce.model.Produto;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
 import java.util.List;
 
-@Repository
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import br.com.ecommerce.model.Produto;
+
 public interface ProdutoRepository extends JpaRepository<Produto, Long> {
     List<Produto> findByCategoriaId(Long categoriaId);
     long countByEstoqueLessThan(Integer estoque);
