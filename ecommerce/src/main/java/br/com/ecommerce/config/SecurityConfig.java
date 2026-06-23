@@ -1,33 +1,37 @@
 package br.com.ecommerce.config;
 
+import br.com.ecommerce.security.JwtAuthenticationFilter;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http, JwtAuthenticationFilter jwtAuthFilter) throws Exception {
         http
                 // Proteção CSRF ignorando endpoints de API e H2 Console
                 .csrf(csrf -> csrf
-                        .ignoringRequestMatchers("/api/**", "/h2-console", "/h2-console/**"))
+                        .ignoringRequestMatchers("/api/**", "/h2-console", "/h2-console/**", "/v3/api-docs/**", "/swagger-ui/**"))
                 // Permite o uso de iframes para o console do banco H2
                 .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()))
                 .authorizeHttpRequests((requests) -> requests
-                        // 1. Arquivos estáticos liberados
-                        .requestMatchers("/css/**", "/js/**", "/images/**", "/webjars/**").permitAll()
-                        // 2. Apenas a tela de login, API, console H2 e troca de tema são liberados
-                        // publicamente
-                        .requestMatchers("/login", "/api/**", "/h2-console", "/h2-console/**", "/theme/toggle")
-                        .permitAll()
+                        // 1. Arquivos estáticos e documentação do Swagger liberados
+                        .requestMatchers("/css/**", "/js/**", "/images/**", "/webjars/**", "/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs", "/v3/api-docs/**").permitAll()
+                        // 2. Apenas a tela de login, rotas públicas, console H2 e troca de tema são liberados publicamente
+                        .requestMatchers("/login", "/api/auth/**", "/api/produtos/**", "/api/pedidos/**", "/h2-console", "/h2-console/**", "/theme/toggle").permitAll()
+                        // 2.1. O assistente IA exige autenticação (pode ser via Bearer token no Swagger ou via Session no E-commerce)
+                        .requestMatchers("/api/assistant/**").authenticated()
                         // 3. Páginas de compra (carrinho/checkout e pedidos) exigem usuário logado
                         .requestMatchers("/checkout", "/checkout/**", "/pedidos", "/pedidos/**").authenticated()
                         // 4. Páginas de administração exigem papel de ADMIN
@@ -39,14 +43,19 @@ public class SecurityConfig {
                         .loginPage("/login")
                         .defaultSuccessUrl("/home", true)
                         .permitAll())
-                .httpBasic(org.springframework.security.config.Customizer.withDefaults()) // Habilita Basic Auth para o
-                                                                                          // Postman
+                .httpBasic(org.springframework.security.config.Customizer.withDefaults()) // Habilita Basic Auth para o Postman
                 .logout((logout) -> logout
                         .logoutUrl("/logout")
                         .logoutSuccessUrl("/login?logout")
-                        .permitAll());
+                        .permitAll())
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+        return config.getAuthenticationManager();
     }
 
     @Bean
@@ -63,8 +72,8 @@ public class SecurityConfig {
             ServletRegistrationBean<?> registration = new ServletRegistrationBean<>(servlet);
             registration.addUrlMappings("/h2-console/*");
             return registration;
-        } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | 
-         IllegalAccessException | java.lang.reflect.InvocationTargetException e) {
+        } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | IllegalAccessException
+                | java.lang.reflect.InvocationTargetException e) {
 
             return null;
         }

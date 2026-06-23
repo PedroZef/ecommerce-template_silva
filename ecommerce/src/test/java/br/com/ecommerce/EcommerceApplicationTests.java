@@ -22,9 +22,19 @@ import java.math.BigDecimal;
 import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.test.web.servlet.MockMvc;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 @SpringBootTest
+@AutoConfigureMockMvc
 @ActiveProfiles("dev") // Garante que os testes executem sobre o banco H2 em memória
 class EcommerceApplicationTests {
+
+	@Autowired
+	private MockMvc mockMvc;
 
 	@Autowired
 	private PedidoService pedidoService;
@@ -142,6 +152,13 @@ class EcommerceApplicationTests {
 		long totalPedidosDepois = pedidoRepository.count();
 		assertEquals(totalPedidosAntes, totalPedidosAfter(totalPedidosDepois),
 				"A tabela de pedidos não deve conter novos registros.");
+	}
+
+	@Test
+	void testSwaggerDocs() throws Exception {
+		mockMvc.perform(get("/v3/api-docs"))
+			.andDo(print())
+			.andExpect(status().isOk());
 	}
 
 	private long totalPedidosAfter(long totalPedidosDepois) {

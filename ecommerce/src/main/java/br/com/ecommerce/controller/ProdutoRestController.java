@@ -31,7 +31,7 @@ public class ProdutoRestController {
     // Retorna um único produto em JSON pelo ID
     // Acessar: GET http://localhost:8080/api/produtos/1
     @GetMapping("/{id}")
-    public ResponseEntity<Produto> buscarPorId(@PathVariable Long id) {
+    public ResponseEntity<Produto> buscarPorId(@PathVariable("id") Long id) {
         return produtoService.buscarPorId(id)
                 .map(produto -> ResponseEntity.ok().body(produto))
                 .orElse(ResponseEntity.notFound().build()); // Retorna status 404 (Not Found) apropriado para API se não
@@ -49,7 +49,7 @@ public class ProdutoRestController {
     // Atualiza um produto existente a partir do JSON e ID fornecidos
     // Acessar: PUT http://localhost:8080/api/produtos/1
     @PutMapping("/{id}")
-    public ResponseEntity<Produto> atualizar(@PathVariable Long id, @Valid @RequestBody Produto produtoAtualizado) {
+    public ResponseEntity<Produto> atualizar(@PathVariable("id") Long id, @Valid @RequestBody Produto produtoAtualizado) {
         try {
             Produto produto = produtoService.atualizar(id, produtoAtualizado);
             return ResponseEntity.ok(produto);
@@ -61,7 +61,7 @@ public class ProdutoRestController {
     // Remove um produto pelo ID
     // Acessar: DELETE http://localhost:8080/api/produtos/1
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> remover(@PathVariable Long id) {
+    public ResponseEntity<Void> remover(@PathVariable("id") Long id) {
         try {
             produtoService.excluir(id);
             return ResponseEntity.noContent().build();

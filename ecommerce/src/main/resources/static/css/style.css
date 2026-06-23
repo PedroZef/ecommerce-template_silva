@@ -153,6 +153,24 @@ body {
     line-height: 1.6;
 }
 
+/* Transição suave de cores ao alternar o tema */
+body, 
+.sidebar, 
+.main-content, 
+.glass-panel, 
+.metric-card, 
+.nav-item a, 
+.btn, 
+.custom-table, 
+.custom-table td, 
+.custom-table th, 
+.form-input, 
+.form-select, 
+.form-textarea, 
+.theme-toggle-btn {
+    transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+}
+
 /* ==========================================================================
    Layout Base (Sidebar + Conteúdo Principal)
    ========================================================================== */
@@ -309,6 +327,13 @@ body:has(.light-theme) {
     width: 20px;
     height: 20px;
     transition: var(--transition-smooth);
+}
+
+/* Micro-animação interativa ao passar o mouse */
+.nav-item a:hover svg {
+    transform: translateX(6px) scale(1.12);
+    color: var(--accent);
+    filter: drop-shadow(0 0 5px var(--accent-glow));
 }
 
 /* Área de Conteúdo Principal */
@@ -859,4 +884,232 @@ body:has(.light-theme) {
     color: var(--text-primary);
     border-color: rgba(0, 0, 0, 0.12);
 }
+
+/* ==========================================================================
+   Esqueleto de Carregamento (Skeletons Glassmorphism)
+   ========================================================================== */
+.skeleton {
+    background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0.03) 25%,
+        rgba(255, 255, 255, 0.08) 50%,
+        rgba(255, 255, 255, 0.03) 75%
+    );
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s infinite ease-in-out;
+    border-radius: 8px;
+    display: inline-block;
+}
+
+/* Ajuste do Skeleton para Modo Claro */
+.light-theme .skeleton,
+[data-theme="light"] .skeleton {
+    background: linear-gradient(
+        90deg,
+        rgba(0, 0, 0, 0.03) 25%,
+        rgba(0, 0, 0, 0.08) 50%,
+        rgba(0, 0, 0, 0.03) 75%
+    );
+    background-size: 200% 100%;
+}
+
+@keyframes skeleton-loading {
+    0% {
+        background-position: 200% 0;
+    }
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+/* Skeleton Helpers */
+.skeleton-text {
+    width: 100%;
+    height: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.skeleton-text.short {
+    width: 60%;
+}
+
+.skeleton-title {
+    width: 40%;
+    height: 1.75rem;
+    margin-bottom: 1rem;
+}
+
+.skeleton-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+}
+
+.skeleton-card {
+    height: 120px;
+    width: 100%;
+}
+
+.skeleton-button {
+    width: 100px;
+    height: 40px;
+    border-radius: 10px;
+}
+
+/* ==========================================================================
+   Botão de Sair / Logout
+   ========================================================================== */
+.logout-container {
+    margin-top: 1rem;
+    padding: 0 1.5rem;
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.logout-container form {
+    width: 100%;
+}
+
+.logout-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 0.75rem;
+    background: rgba(239, 68, 68, 0.1);
+    color: #f87171;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    border-radius: 10px;
+    cursor: pointer;
+    font-family: var(--font-heading);
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: var(--transition-smooth);
+}
+
+.logout-btn svg {
+    width: 16px;
+    height: 16px;
+    stroke: currentColor;
+    transition: var(--transition-smooth);
+}
+
+.logout-btn:hover {
+    background: rgba(239, 68, 68, 0.2);
+    color: #ffffff;
+    border-color: rgba(239, 68, 68, 0.4);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.15);
+    transform: translateY(-1px);
+}
+
+.light-theme .logout-btn {
+    background: rgba(239, 68, 68, 0.06);
+    color: #dc2626;
+    border-color: rgba(239, 68, 68, 0.15);
+}
+
+.light-theme .logout-btn:hover {
+    background: rgba(239, 68, 68, 0.12);
+    color: #b91c1c;
+    border-color: rgba(239, 68, 68, 0.3);
+}
+
+/* ==========================================================================
+   Topbar / Header Superior Horizontal
+   ========================================================================== */
+.top-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 1rem;
+    margin-bottom: 2rem;
+    border-bottom: 1px solid var(--border-glass);
+}
+
+.top-header-left {
+    display: flex;
+    align-items: center;
+}
+
+.user-greeting {
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+}
+
+.user-greeting strong {
+    color: var(--text-primary);
+}
+
+.top-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+}
+
+/* Estilo do formulário de tema e logout na horizontal */
+.top-theme-form, .top-logout-form {
+    display: flex;
+    align-items: center;
+    margin: 0;
+}
+
+/* Botão de Tema Horizontal */
+.theme-toggle-btn-horizontal {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    padding: 0;
+}
+
+/* Botão de Sair Horizontal */
+.logout-btn-horizontal {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: rgba(239, 68, 68, 0.1);
+    color: #f87171;
+    border: 1px solid rgba(239, 68, 68, 0.25);
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: var(--font-heading);
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: var(--transition-smooth);
+}
+
+.logout-btn-horizontal svg {
+    width: 14px;
+    height: 14px;
+    stroke: currentColor;
+    transition: var(--transition-smooth);
+}
+
+.logout-btn-horizontal:hover {
+    background: rgba(239, 68, 68, 0.2);
+    color: #ffffff;
+    border-color: rgba(239, 68, 68, 0.4);
+    box-shadow: 0 4px 10px rgba(239, 68, 68, 0.15);
+    transform: translateY(-1px);
+}
+
+.light-theme .logout-btn-horizontal {
+    background: rgba(239, 68, 68, 0.05);
+    color: #dc2626;
+    border-color: rgba(239, 68, 68, 0.15);
+}
+
+.light-theme .logout-btn-horizontal:hover {
+    background: rgba(239, 68, 68, 0.1);
+    color: #b91c1c;
+    border-color: rgba(239, 68, 68, 0.25);
+}
+
+
 
