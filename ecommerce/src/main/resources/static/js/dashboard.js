@@ -181,25 +181,69 @@ document.addEventListener('DOMContentLoaded', () => {
                 fetch(ORDERS_API)
             ]);
 
-            if (!productsRes.ok || !ordersRes.ok) return;
+            if (!productsRes.ok || !ordersRes.ok) {
+                console.error('Falha ao obter dados. Status produtos:', productsRes.status, 'Status pedidos:', ordersRes.status);
+                showErrorMessage(`Erro HTTP: Produtos (${productsRes.status}), Pedidos (${ordersRes.status})`);
+                return;
+            }
 
-            const products = await productsRes.json();
-            const orders = await ordersRes.json();
+            let products = [];
+            let orders = [];
+            try {
+                products = await productsRes.json();
+            } catch (err) {
+                console.error('Erro parse JSON produtos:', err);
+                showErrorMessage('Resposta inválida de produtos (não é JSON).');
+                return;
+            }
 
-            renderCharts(products, orders);
-            renderRecentOrders(orders);
+            try {
+                orders = await ordersRes.json();
+            } catch (err) {
+                console.error('Erro parse JSON pedidos:', err);
+                showErrorMessage('Resposta inválida de pedidos (não é JSON).');
+                return;
+            }
+
+            // Render components with individual try-catch blocks to prevent cascading failures
+            try {
+                renderCharts(products, orders);
+            } catch (chartErr) {
+                console.error('Erro ao renderizar os gráficos no painel:', chartErr);
+            }
+
+            try {
+                renderRecentOrders(orders);
+            } catch (orderErr) {
+                console.error('Erro ao renderizar lista de pedidos recentes:', orderErr);
+            }
         } catch (err) {
             console.error('Erro ao buscar dados do dashboard:', err);
+            showErrorMessage('Erro de conexão ao carregar dados: ' + err.message);
+        }
+    }
+
+    function showErrorMessage(msg) {
+        if (orderList) {
+            orderList.innerHTML = `
+                <tr>
+                    <td colspan="5" style="text-align: center; color: #ef4444; padding: 20px; font-weight: bold;">
+                        ⚠️ ${msg}
+                    </td>
+                </tr>
+            `;
         }
     }
 
     function renderCharts(products, orders) {
-        // Group products by Category
+        // Group products by Category safely
         const categoryData = {};
-        products.forEach(p => {
-            const catName = p.categoria ? p.categoria.nome : 'Sem Categoria';
-            categoryData[catName] = (categoryData[catName] || 0) + 1;
-        });
+        if (Array.isArray(products)) {
+            products.forEach(p => {
+                const catName = p.categoria ? p.categoria.nome : 'Sem Categoria';
+                categoryData[catName] = (categoryData[catName] || 0) + 1;
+            });
+        }
 
         const catLabels = Object.keys(categoryData);
         const catValues = Object.values(categoryData);
@@ -211,9 +255,9 @@ document.addEventListener('DOMContentLoaded', () => {
             categoryChartInstance = new Chart(ctxCat, {
                 type: 'doughnut',
                 data: {
-                    labels: catLabels,
+                    labels: catLabels.length > 0 ? catLabels : ['Sem Produtos'],
                     datasets: [{
-                        data: catValues,
+                        data: catValues.length > 0 ? catValues : [0],
                         backgroundColor: [
                             '#6366f1', '#a855f7', '#ec4899', '#f59e0b', '#10b981', '#3b82f6'
                         ],
@@ -242,11 +286,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Group orders faturamento by date (format date yyyy-MM-dd)
         const orderDataByDate = {};
-        orders.forEach(o => {
-            if (!o.dataPedido) return;
-            const dateStr = o.dataPedido.substring(0, 10);
-            orderDataByDate[dateStr] = (orderDataByDate[dateStr] || 0) + parseFloat(o.total || 0);
-        });
+        if (Array.isArray(orders)) {
+            orders.forEach(o => {
+                if (!o.dataPedido) return;
+                
+                let dateStr = '';
+                if (typeof o.dataPedido === 'string') {
+                    dateStr = o.dataPedido.substring(0, 10);
+                } else if (Array.isArray(o.dataPedido)) {
+                    // Jackson array serialization for LocalDateTime: [yyyy, MM, dd, HH, mm, ss]
+                    const yyyy = o.dataPedido[0];
+                    const MM = String(o.dataPedido[1]).padStart(2, '0');
+                    const dd = String(o.dataPedido[2]).padStart(2, '0');
+                    dateStr = `${yyyy}-${MM}-${dd}`;
+                } else {
+                    const dateObj = new Date(o.dataPedido);
+                    if (!isNaN(dateObj.getTime())) {
+                        dateStr = dateObj.toISOString().substring(0, 10);
+                    }
+                }
+                
+                if (dateStr) {
+                    orderDataByDate[dateStr] = (orderDataByDate[dateStr] || 0) + parseFloat(o.total || 0);
+                }
+            });
+        }
 
         // Sort dates
         const sortedDates = Object.keys(orderDataByDate).sort();
@@ -307,10 +371,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!orderList) return;
         orderList.innerHTML = '';
 
-        if (orders.length === 0) {
+        if (!Array.isArray(orders) || orders.length === 0) {
             orderList.innerHTML = `
                 <tr>
-                    <td colspan="5" style="text-align: center; color: #9fa6bc; padding: 20px;">
+                    <td colspan="6" style="text-align: center; color: #9fa6bc; padding: 20px;">
                         Nenhum pedido registrado no sistema.
                     </td>
                 </tr>
@@ -322,16 +386,51 @@ document.addEventListener('DOMContentLoaded', () => {
         const recent = orders.sort((a, b) => b.id - a.id).slice(0, 5);
 
         recent.forEach(o => {
-            const dateObj = new Date(o.dataPedido);
-            const formattedDate = o.dataPedido ? 
-                `${String(dateObj.getDate()).padStart(2, '0')}/${String(dateObj.getMonth() + 1).padStart(2, '0')} ${String(dateObj.getHours()).padStart(2, '0')}:${String(dateObj.getMinutes()).padStart(2, '0')}` : 
-                'N/A';
+            let formattedDate = 'N/A';
+            if (o.dataPedido) {
+                let dateObj;
+                if (Array.isArray(o.dataPedido)) {
+                    // [year, month, day, hour, minute, second]
+                    // JS Date month is 0-indexed
+                    const year = o.dataPedido[0];
+                    const month = o.dataPedido[1] - 1;
+                    const day = o.dataPedido[2];
+                    const hour = o.dataPedido[3] || 0;
+                    const minute = o.dataPedido[4] || 0;
+                    const second = o.dataPedido[5] || 0;
+                    dateObj = new Date(year, month, day, hour, minute, second);
+                } else {
+                    dateObj = new Date(o.dataPedido);
+                }
+                
+                if (!isNaN(dateObj.getTime())) {
+                    formattedDate = `${String(dateObj.getDate()).padStart(2, '0')}/${String(dateObj.getMonth() + 1).padStart(2, '0')} ${String(dateObj.getHours()).padStart(2, '0')}:${String(dateObj.getMinutes()).padStart(2, '0')}`;
+                }
+            }
 
             let statusClass = 'badge-warning';
+            let statusText = o.status || 'N/A';
             if (o.status === 'CONCLUIDO') {
                 statusClass = 'badge-success';
+                statusText = 'PAGO';
             } else if (o.status === 'CANCELADO') {
                 statusClass = 'badge-danger';
+                statusText = 'CANCELADO';
+            } else if (o.status === 'PENDENTE') {
+                statusClass = 'badge-warning';
+                statusText = 'PENDENTE';
+            }
+
+            const paymentMethods = {
+                'CARTAO_CREDITO': 'Crédito',
+                'CARTAO_DEBITO': 'Débito',
+                'PIX': 'Pix',
+                'BOLETO': 'Boleto'
+            };
+            const methodText = paymentMethods[o.meioPagamento] || 'N/A';
+            let paymentDetail = methodText;
+            if (o.detalhesPagamento && o.detalhesPagamento !== 'Simulado' && o.detalhesPagamento !== 'Pix Simulado') {
+                paymentDetail = o.detalhesPagamento;
             }
 
             const row = document.createElement('tr');
@@ -340,7 +439,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td>${formattedDate}</td>
                 <td>${o.cliente ? o.cliente.nome : 'N/A'}</td>
                 <td><strong>R$ ${parseFloat(o.total || 0).toFixed(2).replace('.', ',')}</strong></td>
-                <td><span class="badge ${statusClass}">${o.status}</span></td>
+                <td><span style="font-size: 0.8rem; color: #9fa6bc;">${paymentDetail}</span></td>
+                <td><span class="badge ${statusClass}">${statusText}</span></td>
             `;
             orderList.appendChild(row);
         });

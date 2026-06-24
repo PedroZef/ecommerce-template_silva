@@ -199,4 +199,27 @@ public class PedidoController {
             return "redirect:/checkout";
         }
     }
+
+    @PostMapping("/pedidos/atualizar-status")
+    public String atualizarStatus(
+            @RequestParam("id") Long id,
+            @RequestParam("status") br.com.ecommerce.model.OrderStatus status,
+            RedirectAttributes redirectAttributes) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        boolean isAdmin = auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+
+        if (!isAdmin) {
+            redirectAttributes.addFlashAttribute("error", "Apenas administradores podem alterar o status de um pedido.");
+            return "redirect:/pedidos";
+        }
+
+        try {
+            pedidoService.atualizarStatus(id, status);
+            redirectAttributes.addFlashAttribute("success", "Status do pedido #" + id + " atualizado para " + status + " com sucesso.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Erro ao atualizar status do pedido: " + e.getMessage());
+        }
+        return "redirect:/pedidos";
+    }
 }

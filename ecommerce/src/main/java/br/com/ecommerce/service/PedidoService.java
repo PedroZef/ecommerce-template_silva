@@ -82,4 +82,12 @@ public class PedidoService {
         // 5. Salva o pedido e os itens em cascata
         return pedidoRepository.save(pedido);
     }
+
+    @Transactional
+    public Pedido atualizarStatus(Long id, OrderStatus novoStatus) {
+        Pedido pedido = pedidoRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Pedido não encontrado com o ID: " + id));
+        pedido.setStatus(novoStatus);
+        return pedidoRepository.save(pedido);
+    }
 }

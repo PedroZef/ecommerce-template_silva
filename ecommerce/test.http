@@ -35,6 +35,16 @@ Content-Type: application/json
 }
 }
 
+### POST - Enviar Comando de Voz
+    curl -X POST http://localhost:8080/api/assistant/voice 
+      -H "Authorization: Bearer eyJhbGciOiJIUzUxMiJ9.
+  eyJzdWIiOiJhZG1pbkBhZG1pbi5jb20iLCJpYXQiOjE3ODIyNjAxODMsImV4cCI6MTc4MjM0NjU4M30.
+  5HTCq7PGz6KEUyia67ZVxGL1f1VhcbdXti1Tz4WVMHbT3rGyo8TAwIsLzZA-bzhy6VJj_62At0o-
+  _OlhrqCzMQ" 
+      -F "audio=@C:/Users/zefpe/Music/audio.ogg"
+
+
+
 ### DELETE - Remover produto
 DELETE http://localhost:8080/api/produtos/1
 

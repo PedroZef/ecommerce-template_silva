@@ -1,5 +1,6 @@
 package br.com.ecommerce.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -28,4 +29,9 @@ public class Cliente {
     @Size(min = 11, max = 14, message = "O CPF deve ter entre 11 e 14 caracteres.")
     @Column(nullable = false, unique = true, length = 14)
     private String cpf;
+
+    @JsonIgnore
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "usuario_id", unique = true)
+    private Usuario usuario;
 }

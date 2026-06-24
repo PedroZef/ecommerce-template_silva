@@ -1,6 +1,11 @@
 package br.com.ecommerce.controller;
 
+import br.com.ecommerce.dto.CategoriaDTO;
+import br.com.ecommerce.dto.ProdutoRequestDto;
+import br.com.ecommerce.dto.ProdutoResponseDto;
+import br.com.ecommerce.model.Categoria;
 import br.com.ecommerce.model.Produto;
+import br.com.ecommerce.service.CategoriaService;
 import br.com.ecommerce.service.ProdutoService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -16,43 +21,58 @@ import java.util.List;
 public class ProdutoRestController {
 
     private final ProdutoService produtoService;
+    private final CategoriaService categoriaService;
 
-    public ProdutoRestController(ProdutoService produtoService) {
+    public ProdutoRestController(ProdutoService produtoService, CategoriaService categoriaService) {
         this.produtoService = produtoService;
+        this.categoriaService = categoriaService;
     }
 
     // Retorna a lista de todos os produtos em JSON
     // Acessar: GET http://localhost:8080/api/produtos
     @GetMapping
-    public List<Produto> listarTodos() {
-        return produtoService.listarTodos();
+    public List<ProdutoResponseDto> listarTodos() {
+        return produtoService.listarTodos().stream()
+                .map(this::convertToResponseDto)
+                .toList();
     }
 
     // Retorna um único produto em JSON pelo ID
     // Acessar: GET http://localhost:8080/api/produtos/1
     @GetMapping("/{id}")
-    public ResponseEntity<Produto> buscarPorId(@PathVariable("id") Long id) {
+    public ResponseEntity<ProdutoResponseDto> buscarPorId(@PathVariable("id") Long id) {
         return produtoService.buscarPorId(id)
-                .map(produto -> ResponseEntity.ok().body(produto))
-                .orElse(ResponseEntity.notFound().build()); // Retorna status 404 (Not Found) apropriado para API se não
-                                                            // existir
+                .map(produto -> ResponseEntity.ok(convertToResponseDto(produto)))
+                .orElse(ResponseEntity.notFound().build());
     }
 
     // Cria um novo produto a partir do JSON enviado no corpo da requisição
     // Acessar: POST http://localhost:8080/api/produtos
     @PostMapping
-    public ResponseEntity<Produto> criar(@Valid @RequestBody Produto produto) {
+    public ResponseEntity<ProdutoResponseDto> criar(@Valid @RequestBody ProdutoRequestDto dto) {
+        Categoria categoria = categoriaService.buscarPorId(dto.getCategoriaId())
+                .orElseThrow(() -> new IllegalArgumentException("Categoria não encontrada com o ID: " + dto.getCategoriaId()));
+        
+        Produto produto = convertToEntity(dto);
+        produto.setCategoria(categoria);
+        
         Produto novoProduto = produtoService.salvar(produto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(novoProduto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(convertToResponseDto(novoProduto));
     }
 
     // Atualiza um produto existente a partir do JSON e ID fornecidos
     // Acessar: PUT http://localhost:8080/api/produtos/1
     @PutMapping("/{id}")
-    public ResponseEntity<Produto> atualizar(@PathVariable("id") Long id, @Valid @RequestBody Produto produtoAtualizado) {
+    public ResponseEntity<ProdutoResponseDto> atualizar(@PathVariable("id") Long id, @Valid @RequestBody ProdutoRequestDto dto) {
         try {
+            Categoria categoria = categoriaService.buscarPorId(dto.getCategoriaId())
+                    .orElseThrow(() -> new IllegalArgumentException("Categoria não encontrada com o ID: " + dto.getCategoriaId()));
+            
+            Produto produtoAtualizado = convertToEntity(dto);
+            produtoAtualizado.setCategoria(categoria);
+            
             Produto produto = produtoService.atualizar(id, produtoAtualizado);
-            return ResponseEntity.ok(produto);
+            return ResponseEntity.ok(convertToResponseDto(produto));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.notFound().build();
         }
@@ -68,5 +88,27 @@ public class ProdutoRestController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.notFound().build();
         }
+    }
+
+    private ProdutoResponseDto convertToResponseDto(Produto produto) {
+        ProdutoResponseDto dto = new ProdutoResponseDto();
+        dto.setId(produto.getId());
+        dto.setNome(produto.getNome());
+        dto.setDescricao(produto.getDescricao());
+        dto.setPreco(produto.getPreco());
+        dto.setEstoque(produto.getEstoque());
+        if (produto.getCategoria() != null) {
+            dto.setCategoria(new CategoriaDTO(produto.getCategoria().getId(), produto.getCategoria().getNome()));
+        }
+        return dto;
+    }
+
+    private Produto convertToEntity(ProdutoRequestDto dto) {
+        Produto produto = new Produto();
+        produto.setNome(dto.getNome());
+        produto.setDescricao(dto.getDescricao());
+        produto.setPreco(dto.getPreco());
+        produto.setEstoque(dto.getEstoque());
+        return produto;
     }
 }

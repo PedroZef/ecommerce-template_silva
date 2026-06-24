@@ -27,6 +27,14 @@
                 </svg>
                 <span th:text="${success}"></span>
             </div>
+            <div th:if="${error}" class="alert alert-danger">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="15" y1="9" x2="9" y2="15"></line>
+                    <line x1="9" y1="9" x2="15" y2="15"></line>
+                </svg>
+                <span th:text="${error}"></span>
+            </div>
 
             <!-- Listagem de Pedidos -->
             <div class="glass-panel">
@@ -49,6 +57,7 @@
                                 <th>Pagamento</th>
                                 <th>Status ACID</th>
                                 <th>Valor Total</th>
+                                <th sec:authorize="hasRole('ADMIN')">Ações</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -90,16 +99,28 @@
                                     </div>
                                 </td>
                                 <td>
-                                    <span class="badge badge-success">COMMITADO (CONCLUÍDO)</span>
+                                    <span th:if="${ped.status.name() == 'CONCLUIDO'}" class="badge badge-success">CONCLUÍDO</span>
+                                    <span th:if="${ped.status.name() == 'PENDENTE'}" class="badge badge-warning">PENDENTE</span>
+                                    <span th:if="${ped.status.name() == 'CANCELADO'}" class="badge badge-danger">CANCELADO</span>
                                 </td>
                                 <td>
                                     <strong class="pedidos-style-12"
                                         th:text="'R$ ' + ${#numbers.formatDecimal(ped.total, 1, 'POINT', 2, 'COMMA')}">R$
                                         0,00</strong>
                                 </td>
+                                <td sec:authorize="hasRole('ADMIN')">
+                                    <form th:action="@{/pedidos/atualizar-status}" method="post" style="display: inline-flex; gap: 5px; margin: 0;">
+                                        <input type="hidden" name="id" th:value="${ped.id}" />
+                                        <select name="status" class="form-select btn-sm" style="width: auto; padding: 2px 5px; font-size: 0.8rem;" onchange="this.form.submit()">
+                                            <option value="PENDENTE" th:selected="${ped.status.name() == 'PENDENTE'}">Pendente</option>
+                                            <option value="CONCLUIDO" th:selected="${ped.status.name() == 'CONCLUIDO'}">Concluído</option>
+                                            <option value="CANCELADO" th:selected="${ped.status.name() == 'CANCELADO'}">Cancelado</option>
+                                        </select>
+                                    </form>
+                                </td>
                             </tr>
                             <tr th:if="${#lists.isEmpty(pedidos)}">
-                                <td class="pedidos-style-13" colspan="7">
+                                <td class="pedidos-style-13" th:colspan="${#authorization.expression('hasRole(''ADMIN'')') ? 8 : 7}">
                                     Nenhum pedido realizado ainda. Vá para o
                                     <strong>Simulador ACID</strong> e faça a
                                     sua primeira compra!

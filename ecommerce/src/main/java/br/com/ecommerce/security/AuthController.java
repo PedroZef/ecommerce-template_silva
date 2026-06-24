@@ -55,7 +55,7 @@ public class AuthController {
         Usuario user = new Usuario();
         user.setEmail(registerDto.getEmail());
         user.setSenha(passwordEncoder.encode(registerDto.getPassword()));
-        user.setRole(registerDto.getRole() != null ? registerDto.getRole().trim() : "ROLE_USER");
+        user.setRole("ROLE_USER");
 
         usuarioRepository.save(user);
 

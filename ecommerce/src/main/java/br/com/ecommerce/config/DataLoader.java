@@ -98,6 +98,7 @@ public class DataLoader implements CommandLineRunner {
             cliente.setNome(nome);
             cliente.setEmail(email);
             cliente.setCpf(cpf);
+            usuarioRepository.findByEmail(email).ifPresent(cliente::setUsuario);
             clienteRepository.save(cliente);
             System.out.println("Cliente criado: " + nome + " (" + email + ")");
         }

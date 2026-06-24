@@ -31,6 +31,10 @@ public class ClienteService {
         return repository.findByEmail(email);
     }
 
+    public Optional<Cliente> buscarPorUsuarioId(Long usuarioId) {
+        return repository.findByUsuarioId(usuarioId);
+    }
+
     @Transactional
     public Cliente salvar(Cliente cliente) {
         // Validação de e-mail único

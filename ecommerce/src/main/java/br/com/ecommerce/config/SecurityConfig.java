@@ -21,7 +21,7 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http, JwtAuthenticationFilter jwtAuthFilter) throws Exception {
         http
                 // Proteção CSRF ignorando endpoints de API e H2 Console
-                .csrf(csrf -> csrf
+                 .csrf(csrf -> csrf
                         .ignoringRequestMatchers("/api/**", "/h2-console", "/h2-console/**", "/v3/api-docs/**", "/swagger-ui/**"))
                 // Permite o uso de iframes para o console do banco H2
                 .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()))
@@ -29,7 +29,7 @@ public class SecurityConfig {
                         // 1. Arquivos estáticos e documentação do Swagger liberados
                         .requestMatchers("/css/**", "/js/**", "/images/**", "/webjars/**", "/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs", "/v3/api-docs/**").permitAll()
                         // 2. Apenas a tela de login, rotas públicas, console H2 e troca de tema são liberados publicamente
-                        .requestMatchers("/login", "/api/auth/**", "/api/produtos/**", "/api/pedidos/**", "/h2-console", "/h2-console/**", "/theme/toggle").permitAll()
+                        .requestMatchers("/login", "/api/auth/**", "/api/produtos", "/api/produtos/**", "/api/pedidos", "/api/pedidos/**", "/h2-console", "/h2-console/**", "/theme/toggle").permitAll()
                         // 2.1. O assistente IA exige autenticação (pode ser via Bearer token no Swagger ou via Session no E-commerce)
                         .requestMatchers("/api/assistant/**").authenticated()
                         // 3. Páginas de compra (carrinho/checkout e pedidos) exigem usuário logado
