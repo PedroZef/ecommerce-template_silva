@@ -20,15 +20,18 @@ public class EcommerceTools {
     private final CategoriaRepository categoriaRepository;
     private final PedidoRepository pedidoRepository;
     private final PedidoService pedidoService;
+    private final DespesaRepository despesaRepository;
 
     public EcommerceTools(ProdutoRepository produtoRepository,
                           CategoriaRepository categoriaRepository,
                           PedidoRepository pedidoRepository,
-                          PedidoService pedidoService) {
+                          PedidoService pedidoService,
+                          DespesaRepository despesaRepository) {
         this.produtoRepository = produtoRepository;
         this.categoriaRepository = categoriaRepository;
         this.pedidoRepository = pedidoRepository;
         this.pedidoService = pedidoService;
+        this.despesaRepository = despesaRepository;
     }
 
     private String getUsuarioLogado() {
@@ -145,5 +148,41 @@ public class EcommerceTools {
         } catch (IllegalArgumentException e) {
             return String.format("Erro: Status '%s' é inválido. Escolha um dos seguintes: PENDENTE, CONCLUIDO, CANCELADO.", novoStatus);
         }
+    }
+
+    @Tool(description = "Registra um novo gasto pessoal ou despesa. Categorias recomendadas: Supermercado, Farmácia, Outros.")
+    public String cadastrarDespesa(String descricao, BigDecimal valor, String categoria) {
+        Despesa despesa = new Despesa(descricao, valor, categoria.trim());
+        Despesa salva = despesaRepository.save(despesa);
+        return String.format("Sucesso: Despesa '%s' de R$ %.2f cadastrada na categoria '%s'. (ID: %d)",
+                salva.getDescricao(), salva.getValor(), salva.getCategoria(), salva.getId());
+    }
+
+    @Tool(description = "Lista todos os gastos cadastrados, com opção de filtrar por categoria (Supermercado, Farmácia, etc.) e mostra o total acumulado.")
+    public String obterRelatorioDespesas(String categoriaFiltro) {
+        List<Despesa> despesas;
+        if (categoriaFiltro != null && !categoriaFiltro.trim().isEmpty() && !categoriaFiltro.equalsIgnoreCase("todas")) {
+            despesas = despesaRepository.findByCategoriaIgnoreCase(categoriaFiltro.trim());
+        } else {
+            despesas = despesaRepository.findAll();
+        }
+
+        if (despesas.isEmpty()) {
+            return "Nenhum gasto ou despesa foi encontrado para o filtro solicitado.";
+        }
+
+        BigDecimal total = despesas.stream()
+                .map(Despesa::getValor)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("=== Relatório de Despesas ===\n");
+        java.time.format.DateTimeFormatter dtf = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
+        for (Despesa d : despesas) {
+            sb.append(String.format("- %s (Cat: %s): R$ %.2f | Data: %s\n",
+                    d.getDescricao(), d.getCategoria(), d.getValor(), d.getDataDespesa().format(dtf)));
+        }
+        sb.append(String.format("Total Acumulado: R$ %.2f", total));
+        return sb.toString();
     }
 }

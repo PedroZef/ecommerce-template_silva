@@ -217,6 +217,33 @@ document.addEventListener('DOMContentLoaded', () => {
             } catch (orderErr) {
                 console.error('Erro ao renderizar lista de pedidos recentes:', orderErr);
             }
+
+            // Atualiza os cards de métricas no topo do painel dinamicamente
+            try {
+                const productsValueEl = document.querySelector('.metric-card-custom.produtos .metric-value');
+                if (productsValueEl && Array.isArray(products)) {
+                    productsValueEl.innerText = products.length;
+                }
+                
+                const categoriesValueEl = document.querySelector('.metric-card-custom.categorias .metric-value');
+                if (categoriesValueEl && Array.isArray(products)) {
+                    const uniqueCategories = new Set(products.map(p => p.categoria ? p.categoria.nome : null).filter(Boolean));
+                    categoriesValueEl.innerText = uniqueCategories.size;
+                }
+                
+                const ordersValueEl = document.querySelector('.metric-card-custom.pedidos .metric-value');
+                if (ordersValueEl && Array.isArray(orders)) {
+                    ordersValueEl.innerText = orders.length;
+                }
+
+                const faturamentoValueEl = document.querySelector('.metric-card-custom.faturamento .metric-value');
+                if (faturamentoValueEl && Array.isArray(orders)) {
+                    const total = orders.reduce((sum, o) => sum + parseFloat(o.total || 0), 0);
+                    faturamentoValueEl.innerText = 'R$ ' + total.toFixed(2).replace('.', ',');
+                }
+            } catch (metricErr) {
+                console.error('Erro ao atualizar métricas dinâmicas:', metricErr);
+            }
         } catch (err) {
             console.error('Erro ao buscar dados do dashboard:', err);
             showErrorMessage('Erro de conexão ao carregar dados: ' + err.message);

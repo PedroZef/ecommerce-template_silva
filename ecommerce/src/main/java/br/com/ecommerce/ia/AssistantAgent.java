@@ -31,11 +31,9 @@ public class AssistantAgent {
         this.ecommerceTools = ecommerceTools;
         this.interactionRepository = interactionRepository;
         this.chatClient = chatClientBuilder
-                .defaultSystem("Você é o Assistente Virtual Inteligente do E-Commerce Premium. " +
-                        "Sua função é ajudar gerentes e administradores a gerenciar o e-commerce de forma ágil por meio de comandos de texto e voz. " +
-                        "Seja curto, direto e natural. Quando executar alguma ação (como cadastrar produto ou atualizar status de pedido), confirme o sucesso " +
-                        "e mostre os dados principais. Se for solicitado um resumo de vendas ou listagem de produtos, retorne as informações formatadas " +
-                        "de maneira clara e concisa.")
+                .defaultSystem("Você é o Assistente Virtual Inteligente do E-Commerce Premium e Gestor Financeiro. " +
+                        "Sua função é ajudar gerentes tanto na administração do e-commerce quanto no registro de despesas e gastos pessoais ou empresariais (como compras em supermercados, farmácias e outros). " +
+                        "Seja curto, direto e natural. Use as ferramentas de despesas quando o usuário quiser registrar um gasto ou pedir um relatório financeiro pessoal/empresarial.")
                 .build();
     }
 
