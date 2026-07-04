@@ -29,15 +29,15 @@ public class OpenApiConfig {
     public GroupedOpenApi publicApi() {
         return GroupedOpenApi.builder()
                 .group("1 - Geral (Público)")
-                .pathsToMatch("/api/auth/**", "/api/produtos/**", "/api/pedidos/**")
+                .pathsToMatch("/api/auth/**", "/api/produtos", "/api/produtos/**", "/api/pedidos", "/api/pedidos/**")
                 .build();
     }
 
     @Bean
     public GroupedOpenApi privateApi() {
         return GroupedOpenApi.builder()
-                .group("2 - Assistente IA (Protegido/Token)")
-                .pathsToMatch("/api/assistant/**")
+                .group("2 - Assistente IA (Protegido - Token)")
+                .pathsToMatch("/api/assistant", "/api/assistant/**")
                 .build();
     }
 }

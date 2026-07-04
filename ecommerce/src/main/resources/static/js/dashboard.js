@@ -205,9 +205,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // Render components with individual try-catch blocks to prevent cascading failures
+            // Faturamento considera apenas pedidos CONCLUIDOS
+            const concludedOrders = Array.isArray(orders) ? orders.filter(o => o.status === 'CONCLUIDO') : [];
+
             try {
-                renderCharts(products, orders);
+                renderCharts(products, concludedOrders);
             } catch (chartErr) {
                 console.error('Erro ao renderizar os gráficos no painel:', chartErr);
             }
@@ -237,8 +239,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 const faturamentoValueEl = document.querySelector('.metric-card-custom.faturamento .metric-value');
-                if (faturamentoValueEl && Array.isArray(orders)) {
-                    const total = orders.reduce((sum, o) => sum + parseFloat(o.total || 0), 0);
+                if (faturamentoValueEl) {
+                    const total = concludedOrders.reduce((sum, o) => sum + parseFloat(o.total || 0), 0);
                     faturamentoValueEl.innerText = 'R$ ' + total.toFixed(2).replace('.', ',');
                 }
             } catch (metricErr) {
@@ -464,7 +466,7 @@ document.addEventListener('DOMContentLoaded', () => {
             row.innerHTML = `
                 <td>#${o.id}</td>
                 <td>${formattedDate}</td>
-                <td>${o.cliente ? o.cliente.nome : 'N/A'}</td>
+                <td>${o.clienteNome || 'N/A'}</td>
                 <td><strong>R$ ${parseFloat(o.total || 0).toFixed(2).replace('.', ',')}</strong></td>
                 <td><span style="font-size: 0.8rem; color: #9fa6bc;">${paymentDetail}</span></td>
                 <td><span class="badge ${statusClass}">${statusText}</span></td>

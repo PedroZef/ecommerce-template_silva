@@ -2,12 +2,15 @@ package br.com.ecommerce.service;
 
 import br.com.ecommerce.exception.EstoqueInsuficienteException;
 import br.com.ecommerce.model.ItemPedido;
+import br.com.ecommerce.model.MeioPagamento;
 import br.com.ecommerce.model.OrderStatus;
 import br.com.ecommerce.model.Pedido;
 import br.com.ecommerce.model.Produto;
 import br.com.ecommerce.repository.PedidoRepository;
 import br.com.ecommerce.repository.ProdutoRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
@@ -30,8 +33,20 @@ public class PedidoService {
         return pedidoRepository.sumTotal();
     }
 
+    public BigDecimal calcularFaturamentoTotalConcluidos() {
+        return pedidoRepository.sumTotalConcluidos();
+    }
+
     public List<Pedido> listarTodos() {
         return pedidoRepository.findAll();
+    }
+
+    public List<Pedido> listarPorClienteId(Long clienteId) {
+        return pedidoRepository.findByClienteId(clienteId);
+    }
+
+    public List<Pedido> listarRecentes(int limite) {
+        return pedidoRepository.findAllByOrderByDataPedidoDesc(PageRequest.of(0, limite)).getContent();
     }
 
     public Optional<Pedido> buscarPorId(Long id) {
@@ -50,8 +65,18 @@ public class PedidoService {
             throw new IllegalArgumentException("O pedido não pode ser finalizado sem itens na cesta.");
         }
 
-        // Configura o status inicial do pedido
-        pedido.setStatus(OrderStatus.CONCLUIDO);
+        // Define o status conforme a forma de pagamento
+        if (pedido.getMeioPagamento() == null) {
+            pedido.setStatus(OrderStatus.CONCLUIDO);
+        } else {
+            pedido.setStatus(switch (pedido.getMeioPagamento()) {
+                case PIX, CARTAO_DEBITO -> OrderStatus.CONCLUIDO;
+                case CARTAO_CREDITO -> (pedido.getParcelas() != null && pedido.getParcelas() > 1)
+                        ? OrderStatus.PENDENTE
+                        : OrderStatus.CONCLUIDO;
+                case BOLETO -> OrderStatus.PENDENTE;
+            });
+        }
 
         // Processa cada item do pedido
         for (ItemPedido item : pedido.getItens()) {

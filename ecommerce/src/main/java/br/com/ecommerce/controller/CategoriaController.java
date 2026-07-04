@@ -1,5 +1,8 @@
 package br.com.ecommerce.controller;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -8,7 +11,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import br.com.ecommerce.model.Categoria;
 import br.com.ecommerce.service.CategoriaService;
@@ -25,8 +28,12 @@ public class CategoriaController {
     }
 
     @GetMapping
-    public String listar(Model model) {
+    public String listar(Model model,
+                         @RequestParam(value = "success", required = false) String success,
+                         @RequestParam(value = "error", required = false) String error) {
         model.addAttribute("categorias", service.listarTodos());
+        if (success != null) model.addAttribute("success", success);
+        if (error != null) model.addAttribute("error", error);
         if (!model.containsAttribute("categoria")) {
             model.addAttribute("categoria", new Categoria());
         }
@@ -36,27 +43,22 @@ public class CategoriaController {
 
     @PostMapping("/salvar")
     public String salvar(@Valid @ModelAttribute("categoria") Categoria categoria,
-            BindingResult result,
-            RedirectAttributes redirectAttributes) {
+            BindingResult result) {
         if (result.hasErrors()) {
-            redirectAttributes.addFlashAttribute("org.springframework.validation.BindingResult.categoria", result);
-            redirectAttributes.addFlashAttribute("categoria", categoria);
-            redirectAttributes.addFlashAttribute("error", "Erro ao salvar a categoria. Verifique o formulário.");
-            return "redirect:/categorias";
+            return "redirect:/categorias?error=Erro+ao+salvar+a+categoria.+Verifique+o+formul%C3%A1rio.";
         }
 
         try {
             service.salvar(categoria);
-            redirectAttributes.addFlashAttribute("success",
-                    "Categoria '" + categoria.getNome() + "' salva com sucesso!");
+            String nome = URLEncoder.encode(categoria.getNome(), StandardCharsets.UTF_8);
+            return "redirect:/categorias?success=Categoria+" + nome + "+salva+com+sucesso!";
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Erro ao salvar categoria: " + e.getMessage());
+            return "redirect:/categorias?error=Erro+ao+salvar+categoria";
         }
-        return "redirect:/categorias";
     }
 
     @GetMapping("/editar/{id}")
-    public String editar(@PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) {
+    public String editar(@PathVariable("id") Long id, Model model) {
         try {
             Categoria categoria = service.buscarPorId(id)
                     .orElseThrow(() -> new IllegalArgumentException("Categoria não encontrada com o ID: " + id));
@@ -65,20 +67,17 @@ public class CategoriaController {
             model.addAttribute("page", "categorias");
             return "categorias";
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", e.getMessage());
-            return "redirect:/categorias";
+            return "redirect:/categorias?error=" + URLEncoder.encode(e.getMessage(), StandardCharsets.UTF_8);
         }
     }
 
     @GetMapping("/excluir/{id}")
-    public String excluir(@PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
+    public String excluir(@PathVariable("id") Long id) {
         try {
             service.excluir(id);
-            redirectAttributes.addFlashAttribute("success", "Categoria excluída com sucesso!");
+            return "redirect:/categorias?success=Categoria+excluida+com+sucesso!";
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error",
-                    "Esta categoria não pode ser excluída porque possui produtos associados a ela.");
+            return "redirect:/categorias?error=Esta+categoria+n%C3%A3o+pode+ser+exclu%C3%ADda+porque+possui+produtos+associados+a+ela.";
         }
-        return "redirect:/categorias";
     }
 }

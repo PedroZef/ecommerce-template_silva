@@ -18,18 +18,15 @@ public class EcommerceTools {
 
     private final ProdutoRepository produtoRepository;
     private final CategoriaRepository categoriaRepository;
-    private final PedidoRepository pedidoRepository;
     private final PedidoService pedidoService;
     private final DespesaRepository despesaRepository;
 
     public EcommerceTools(ProdutoRepository produtoRepository,
                           CategoriaRepository categoriaRepository,
-                          PedidoRepository pedidoRepository,
                           PedidoService pedidoService,
                           DespesaRepository despesaRepository) {
         this.produtoRepository = produtoRepository;
         this.categoriaRepository = categoriaRepository;
-        this.pedidoRepository = pedidoRepository;
         this.pedidoService = pedidoService;
         this.despesaRepository = despesaRepository;
     }
@@ -132,21 +129,14 @@ public class EcommerceTools {
 
     @Tool(description = "Atualiza o status de um pedido específico. Parâmetros: idPedido (Long) e novoStatus (PENDENTE, CONCLUIDO ou CANCELADO).")
     public String atualizarStatusPedido(Long idPedido, String novoStatus) {
-        Optional<Pedido> pedidoOpt = pedidoService.buscarPorId(idPedido);
-        if (pedidoOpt.isEmpty()) {
-            return "Pedido de ID " + idPedido + " não foi encontrado.";
-        }
-
-        Pedido pedido = pedidoOpt.get();
-        OrderStatus statusAntigo = pedido.getStatus();
         try {
             OrderStatus statusNovo = OrderStatus.valueOf(novoStatus.toUpperCase().trim());
-            pedido.setStatus(statusNovo);
-            pedidoRepository.save(pedido);
-            return String.format("Pedido #%d atualizado com sucesso de '%s' para '%s'.",
-                    idPedido, statusAntigo, statusNovo);
+            Pedido pedido = pedidoService.atualizarStatus(idPedido, statusNovo);
+            return String.format("Pedido #%d atualizado com sucesso para '%s'.", idPedido, pedido.getStatus());
         } catch (IllegalArgumentException e) {
             return String.format("Erro: Status '%s' é inválido. Escolha um dos seguintes: PENDENTE, CONCLUIDO, CANCELADO.", novoStatus);
+        } catch (Exception e) {
+            return "Erro ao atualizar pedido #" + idPedido + ": " + e.getMessage();
         }
     }
 

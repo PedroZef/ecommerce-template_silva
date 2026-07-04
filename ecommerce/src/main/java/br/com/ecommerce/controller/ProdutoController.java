@@ -1,5 +1,8 @@
 package br.com.ecommerce.controller;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -8,7 +11,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import br.com.ecommerce.model.Produto;
 import br.com.ecommerce.service.CategoriaService;
@@ -28,9 +31,13 @@ public class ProdutoController {
     }
 
     @GetMapping
-    public String listar(Model model) {
+    public String listar(Model model,
+                         @RequestParam(value = "success", required = false) String success,
+                         @RequestParam(value = "error", required = false) String error) {
         model.addAttribute("produtos", produtoService.listarTodos());
         model.addAttribute("categorias", categoriaService.listarTodos());
+        if (success != null) model.addAttribute("success", success);
+        if (error != null) model.addAttribute("error", error);
         if (!model.containsAttribute("produto")) {
             model.addAttribute("produto", new Produto());
         }
@@ -40,27 +47,22 @@ public class ProdutoController {
 
     @PostMapping("/salvar")
     public String salvar(@Valid @ModelAttribute("produto") Produto produto,
-            BindingResult result,
-            RedirectAttributes redirectAttributes) {
+            BindingResult result) {
         if (result.hasErrors()) {
-            redirectAttributes.addFlashAttribute("org.springframework.validation.BindingResult.produto", result);
-            redirectAttributes.addFlashAttribute("produto", produto);
-            redirectAttributes.addFlashAttribute("error",
-                    "Erro ao salvar o produto. Verifique se os dados estão preenchidos corretamente.");
-            return "redirect:/produtos";
+            return "redirect:/produtos?error=Erro+ao+salvar+o+produto.+Verifique+se+os+dados+est%C3%A3o+preenchidos+corretamente.";
         }
 
         try {
             produtoService.salvar(produto);
-            redirectAttributes.addFlashAttribute("success", "Produto '" + produto.getNome() + "' salvo com sucesso!");
+            String nome = URLEncoder.encode(produto.getNome(), StandardCharsets.UTF_8);
+            return "redirect:/produtos?success=Produto+" + nome + "+salvo+com+sucesso!";
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Erro ao salvar o produto: " + e.getMessage());
+            return "redirect:/produtos?error=Erro+ao+salvar+o+produto";
         }
-        return "redirect:/produtos";
     }
 
     @GetMapping("/editar/{id}")
-    public String editar(@PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) {
+    public String editar(@PathVariable("id") Long id, Model model) {
         try {
             Produto produto = produtoService.buscarPorId(id)
                     .orElseThrow(() -> new IllegalArgumentException("Produto não encontrado com o ID: " + id));
@@ -70,20 +72,17 @@ public class ProdutoController {
             model.addAttribute("page", "produtos");
             return "produtos";
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", e.getMessage());
-            return "redirect:/produtos";
+            return "redirect:/produtos?error=" + URLEncoder.encode(e.getMessage(), StandardCharsets.UTF_8);
         }
     }
 
     @GetMapping("/excluir/{id}")
-    public String excluir(@PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
+    public String excluir(@PathVariable("id") Long id) {
         try {
             produtoService.excluir(id);
-            redirectAttributes.addFlashAttribute("success", "Produto excluído com sucesso!");
+            return "redirect:/produtos?success=Produto+excluido+com+sucesso!";
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error",
-                    "Este produto não pode ser excluído porque está associado a itens de pedidos realizados.");
+            return "redirect:/produtos?error=Este+produto+n%C3%A3o+pode+ser+exclu%C3%ADdo+porque+est%C3%A1+associado+a+itens+de+pedidos+realizados.";
         }
-        return "redirect:/produtos";
     }
 }

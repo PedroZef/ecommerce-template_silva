@@ -1,5 +1,24 @@
 package br.com.ecommerce.controller;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
+import java.util.Set;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+
 import br.com.ecommerce.ia.AssistantAgent;
 import br.com.ecommerce.ia.LatestInteraction;
 import br.com.ecommerce.model.Interaction;
@@ -7,15 +26,6 @@ import br.com.ecommerce.repository.InteractionRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/assistant")
@@ -23,6 +33,9 @@ import java.util.List;
 public class AssistantController {
 
     private static final Logger logger = LoggerFactory.getLogger(AssistantController.class);
+    private static final long MAX_AUDIO_SIZE = 25 * 1024 * 1024L;
+    private static final Set<String> ALLOWED_EXTENSIONS = Set.of("ogg", "wav", "mp3", "webm", "m4a");
+
     private final AssistantAgent agent;
     private final InteractionRepository interactionRepository;
 
@@ -36,34 +49,40 @@ public class AssistantController {
         description = "Recebe um arquivo de áudio contendo um comando do e-commerce, transcreve para texto, usa a IA para interpretar e executa a ação/ferramenta correspondente."
     )
     @PostMapping(value = "/voice", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @SuppressWarnings("UseSpecificCatch")
     public ResponseEntity<String> handleVoiceCommand(
             @Parameter(description = "Arquivo de áudio (.ogg, .wav, .mp3) com o comando de voz")
             @RequestPart("audio") MultipartFile audioFile) {
-        try {
-            String originalFilename = audioFile.getOriginalFilename();
-            String extension = ".ogg"; // fallback default
-            if (originalFilename != null && originalFilename.contains(".")) {
-                extension = originalFilename.substring(originalFilename.lastIndexOf("."));
-            }
-            java.io.File tempFile = java.io.File.createTempFile("voice_", extension);
-            audioFile.transferTo(tempFile);
 
-            String resposta = agent.processarComandoDeVoz(new org.springframework.core.io.FileSystemResource(tempFile));
-            
-            tempFile.delete(); // Limpa o arquivo temp depois de usar
-            
-            logger.info("Operação concluída com sucesso: Comando de voz processado.");
-            return ResponseEntity.ok(resposta);
-        } catch (Exception e) {
-            e.printStackTrace();
-            String detalhe = e.getMessage();
-            Throwable rootCause = e;
-            while (rootCause.getCause() != null && rootCause != rootCause.getCause()) {
-                rootCause = rootCause.getCause();
+        if (audioFile.isEmpty()) {
+            return ResponseEntity.badRequest().body("Erro: Arquivo de áudio vazio.");
+        }
+        if (audioFile.getSize() > MAX_AUDIO_SIZE) {
+            return ResponseEntity.badRequest().body("Erro: Arquivo muito grande. Máximo permitido: 25MB.");
+        }
+
+        String ext = obterExtensao(audioFile.getOriginalFilename());
+        if (!ALLOWED_EXTENSIONS.contains(ext)) {
+            return ResponseEntity.badRequest().body("Erro: Formato de áudio não suportado. Use: " + ALLOWED_EXTENSIONS);
+        }
+
+        try {
+            File tempFile = File.createTempFile("voice_", "." + ext);
+            try {
+                audioFile.transferTo(tempFile);
+                String resposta = agent.processarComandoDeVoz(new FileSystemResource(tempFile));
+                logger.info("Comando de voz processado com sucesso.");
+                return ResponseEntity.ok(resposta);
+            } finally {
+                if (!tempFile.delete()) {
+                    tempFile.deleteOnExit();
+                }
             }
-            detalhe += " | Erro Real: " + rootCause.getMessage();
-            return ResponseEntity.internalServerError().body("Erro: " + detalhe);
+        } catch (IOException e) {
+            logger.error("Erro de IO ao processar áudio", e);
+            return ResponseEntity.internalServerError().body("Erro ao processar arquivo de áudio.");
+        } catch (Exception e) {
+            logger.error("Erro ao processar comando de voz", e);
+            return ResponseEntity.internalServerError().body("Erro interno ao processar comando de voz.");
         }
     }
 
@@ -73,22 +92,21 @@ public class AssistantController {
     )
     @PostMapping(value = "/text", consumes = MediaType.TEXT_PLAIN_VALUE)
     public ResponseEntity<String> handleTextCommand(
-            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Pergunta ou comando do e-commerce. Exemplos: 'Como está o estoque do Smartphone?', 'Cadastrar produto Camisa Polo custando 120 reais com 10 no estoque na categoria Roupas', 'Qual o faturamento total?'")
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Pergunta ou comando do e-commerce")
             @RequestBody String commandText) {
+        if (commandText == null || commandText.trim().isEmpty()) {
+            return ResponseEntity.badRequest().body("Erro: Comando de texto vazio.");
+        }
         try {
             String resposta = agent.processarComandoDeTexto(commandText);
-            logger.info("Operação concluída com sucesso: Comando de texto processado.");
+            logger.info("Comando de texto processado com sucesso.");
             return ResponseEntity.ok(resposta);
         } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.internalServerError().body("Erro: " + e.getMessage());
+            logger.error("Erro ao processar comando de texto", e);
+            return ResponseEntity.internalServerError().body("Erro interno ao processar comando.");
         }
     }
 
-    @Operation(
-        summary = "Obter a última interação do assistente",
-        description = "Retorna os detalhes da última interação (de texto ou voz) que foi processada."
-    )
     @GetMapping(value = "/latest", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<LatestInteraction> getLatestInteraction() {
         String usuarioLogado = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -99,18 +117,14 @@ public class AssistantController {
         return ResponseEntity.ok(interaction);
     }
 
-    @Operation(
-        summary = "Listar histórico de interações do assistente",
-        description = "Retorna todos os detalhes das interações (de texto ou voz) cadastradas."
-    )
     @GetMapping(value = "/interactions", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<Interaction>> listarInteracoes() {
         var auth = SecurityContextHolder.getContext().getAuthentication();
         String usuarioLogado = (auth != null) ? auth.getName() : null;
-        
+
         boolean isAdmin = auth != null && auth.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-                
+
         List<Interaction> interacoes;
         if (isAdmin || usuarioLogado == null || usuarioLogado.equals("anonymousUser")) {
             interacoes = interactionRepository.findAllByOrderByTimestampDesc();
@@ -118,5 +132,12 @@ public class AssistantController {
             interacoes = interactionRepository.findByUsuarioOrUsuarioIsNullOrderByTimestampDesc(usuarioLogado);
         }
         return ResponseEntity.ok(interacoes);
+    }
+
+    private static String obterExtensao(String filename) {
+        if (filename == null || !filename.contains(".")) return "webm";
+        String ext = filename.substring(filename.lastIndexOf(".") + 1).toLowerCase();
+        if (ext.contains("x-m4a") || ext.contains("mp4")) return "m4a";
+        return ext;
     }
 }

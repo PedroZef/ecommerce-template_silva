@@ -3,6 +3,7 @@ package br.com.ecommerce.security;
 import br.com.ecommerce.model.Usuario;
 import br.com.ecommerce.repository.UsuarioRepository;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -47,7 +48,7 @@ public class AuthController {
 
     @Operation(summary = "Registrar novo usuário", description = "Cadastra um novo usuário no sistema com senha criptografada.")
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody RegisterDto registerDto) {
+    public ResponseEntity<?> register(@Valid @RequestBody RegisterDto registerDto) {
         if (usuarioRepository.findByEmail(registerDto.getEmail()).isPresent()) {
             return ResponseEntity.badRequest().body("Erro: O e-mail de usuário já existe.");
         }

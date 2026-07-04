@@ -3,15 +3,11 @@ POST http://localhost:8080/api/produtos
 Content-Type: application/json
 
 {
-  "categoria": {
-    "id": 6,
-    "nome": "Games e Consoles"
-  },
-  "descricao": "Experimente o carregamento ultrarrápido com um SSD de velocidade incrível.",
-  "estoque": 3,
-  "id": 5,
   "nome": "Console NextGen 8K",
-  "preco": 4599
+  "descricao": "Experimente o carregamento ultrarrápido com um SSD de velocidade incrível.",
+  "preco": 4599,
+  "estoque": 3,
+  "categoriaId": 4
 }
 
 ### GET - Listar todos os produtos
@@ -26,13 +22,11 @@ PUT http://localhost:8080/api/produtos/4
 Content-Type: application/json
 
 {
-"nome": "Mouse Gamer",
-"descricao": "RGB 3200 DPI",
-"preco": 129.90,
-"estoque": 15,
-"categoria": {
-  "id": 1
-}
+  "nome": "Mouse Gamer",
+  "descricao": "RGB 3200 DPI",
+  "preco": 129.90,
+  "estoque": 15,
+  "categoriaId": 1
 }
 
 ### POST - Enviar Comando de Voz

@@ -34,8 +34,8 @@ public class DashboardController {
         long totalClientes = clienteService.contarTodos();
         long totalPedidos = pedidoService.contarTodos();
 
-        // Faturamento total calculado via SUM no banco
-        BigDecimal faturamentoTotal = pedidoService.calcularFaturamentoTotal();
+        // Faturamento total calculado via SUM no banco (apenas CONCLUIDOS)
+        BigDecimal faturamentoTotal = pedidoService.calcularFaturamentoTotalConcluidos();
 
         // Quantidade de produtos com estoque baixo (estoque < 5) calculada no banco
         long estoqueBaixo = produtoService.contarEstoqueBaixo(5);

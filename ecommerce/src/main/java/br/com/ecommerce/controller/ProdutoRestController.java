@@ -11,6 +11,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 
 import java.util.List;
 
@@ -49,6 +50,7 @@ public class ProdutoRestController {
     // Cria um novo produto a partir do JSON enviado no corpo da requisição
     // Acessar: POST http://localhost:8080/api/produtos
     @PostMapping
+    @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<ProdutoResponseDto> criar(@Valid @RequestBody ProdutoRequestDto dto) {
         Categoria categoria = categoriaService.buscarPorId(dto.getCategoriaId())
                 .orElseThrow(() -> new IllegalArgumentException("Categoria não encontrada com o ID: " + dto.getCategoriaId()));
@@ -63,6 +65,7 @@ public class ProdutoRestController {
     // Atualiza um produto existente a partir do JSON e ID fornecidos
     // Acessar: PUT http://localhost:8080/api/produtos/1
     @PutMapping("/{id}")
+    @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<ProdutoResponseDto> atualizar(@PathVariable("id") Long id, @Valid @RequestBody ProdutoRequestDto dto) {
         try {
             Categoria categoria = categoriaService.buscarPorId(dto.getCategoriaId())
@@ -81,6 +84,7 @@ public class ProdutoRestController {
     // Remove um produto pelo ID
     // Acessar: DELETE http://localhost:8080/api/produtos/1
     @DeleteMapping("/{id}")
+    @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<Void> remover(@PathVariable("id") Long id) {
         try {
             produtoService.excluir(id);

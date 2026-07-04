@@ -118,6 +118,9 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Audio recording logic
+    const MAX_RECORDING_SECONDS = 30;
+    const MAX_AUDIO_SIZE_BYTES = 25 * 1024 * 1024;
+
     micBtn.addEventListener('click', async () => {
         if (!isRecording) {
             await startRecording();
@@ -131,7 +134,6 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
             
-            // Determine appropriate mime type
             let options = { mimeType: 'audio/webm' };
             if (!MediaRecorder.isTypeSupported(options.mimeType)) {
                 options = { mimeType: 'audio/ogg' };
@@ -140,7 +142,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 options = { mimeType: 'audio/mp4' };
             }
             if (!MediaRecorder.isTypeSupported(options.mimeType)) {
-                options = {}; // fallback Browser default
+                options = {};
             }
 
             mediaRecorder = new MediaRecorder(stream, options);
@@ -152,7 +154,6 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             mediaRecorder.addEventListener('stop', async () => {
-                // Determine audio extension
                 let extension = 'webm';
                 if (options.mimeType) {
                     const match = options.mimeType.match(/audio\/([^;]+)/);
@@ -161,9 +162,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (extension === 'xm4a' || extension === 'mp4') extension = 'm4a';
 
                 const audioBlob = new Blob(audioChunks, { type: options.mimeType || 'audio/webm' });
-                
-                // Close mic track
+
                 stream.getTracks().forEach(track => track.stop());
+
+                if (audioBlob.size === 0) {
+                    appendMessage('ai', 'Gravação vazia. Por favor, tente novamente.');
+                    return;
+                }
+                if (audioBlob.size > MAX_AUDIO_SIZE_BYTES) {
+                    appendMessage('ai', 'Áudio muito grande (máx. 25MB). Grave um comando mais curto.');
+                    return;
+                }
 
                 await sendAudio(audioBlob, extension);
             });
@@ -180,11 +189,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 const mins = String(Math.floor(recordingSeconds / 60)).padStart(2, '0');
                 const secs = String(recordingSeconds % 60).padStart(2, '0');
                 micTimer.innerText = `${mins}:${secs}`;
+                if (recordingSeconds >= MAX_RECORDING_SECONDS) {
+                    stopRecording();
+                }
             }, 1000);
 
         } catch (err) {
             console.error('Acesso ao microfone negado ou indisponível:', err);
-            alert('Não foi possível acessar o microfone para gravação de áudio.');
+            appendMessage('ai', 'Não foi possível acessar o microfone. Verifique as permissões ou use o campo de texto.');
         }
     }
 

@@ -1,5 +1,8 @@
 package br.com.ecommerce.controller;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -8,7 +11,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import br.com.ecommerce.model.Cliente;
 import br.com.ecommerce.service.ClienteService;
@@ -25,8 +28,12 @@ public class ClienteController {
     }
 
     @GetMapping
-    public String listar(Model model) {
+    public String listar(Model model,
+                         @RequestParam(value = "success", required = false) String success,
+                         @RequestParam(value = "error", required = false) String error) {
         model.addAttribute("clientes", service.listarTodos());
+        if (success != null) model.addAttribute("success", success);
+        if (error != null) model.addAttribute("error", error);
         if (!model.containsAttribute("cliente")) {
             model.addAttribute("cliente", new Cliente());
         }
@@ -36,32 +43,24 @@ public class ClienteController {
 
     @PostMapping("/salvar")
     public String salvar(@Valid @ModelAttribute("cliente") Cliente cliente,
-            BindingResult result,
-            RedirectAttributes redirectAttributes) {
+            BindingResult result) {
         if (result.hasErrors()) {
-            redirectAttributes.addFlashAttribute("org.springframework.validation.BindingResult.cliente", result);
-            redirectAttributes.addFlashAttribute("cliente", cliente);
-            redirectAttributes.addFlashAttribute("error",
-                    "Erro ao salvar cliente. Verifique as validações dos campos.");
-            return "redirect:/clientes";
+            return "redirect:/clientes?error=Erro+ao+salvar+cliente.+Verifique+as+valida%C3%A7%C3%B5es+dos+campos.";
         }
 
         try {
             service.salvar(cliente);
-            redirectAttributes.addFlashAttribute("success",
-                    "Cliente '" + cliente.getNome() + "' cadastrado com sucesso!");
+            String nomeEncoded = URLEncoder.encode(cliente.getNome(), StandardCharsets.UTF_8);
+            return "redirect:/clientes?success=Cliente+" + nomeEncoded + "+cadastrado+com+sucesso!";
         } catch (IllegalArgumentException e) {
-            redirectAttributes.addFlashAttribute("org.springframework.validation.BindingResult.cliente", result);
-            redirectAttributes.addFlashAttribute("cliente", cliente);
-            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/clientes?error=" + URLEncoder.encode(e.getMessage(), StandardCharsets.UTF_8);
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Erro ao salvar cliente: " + e.getMessage());
+            return "redirect:/clientes?error=Erro+ao+salvar+cliente";
         }
-        return "redirect:/clientes";
     }
 
     @GetMapping("/editar/{id}")
-    public String editar(@PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) {
+    public String editar(@PathVariable("id") Long id, Model model) {
         try {
             Cliente cliente = service.buscarPorId(id)
                     .orElseThrow(() -> new IllegalArgumentException("Cliente não encontrado com o ID: " + id));
@@ -70,20 +69,17 @@ public class ClienteController {
             model.addAttribute("page", "clientes");
             return "clientes";
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", e.getMessage());
-            return "redirect:/clientes";
+            return "redirect:/clientes?error=" + URLEncoder.encode(e.getMessage(), StandardCharsets.UTF_8);
         }
     }
 
     @GetMapping("/excluir/{id}")
-    public String excluir(@PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
+    public String excluir(@PathVariable("id") Long id) {
         try {
             service.excluir(id);
-            redirectAttributes.addFlashAttribute("success", "Cliente excluído com sucesso!");
+            return "redirect:/clientes?success=Cliente+excluido+com+sucesso!";
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error",
-                    "Este cliente não pode ser excluído porque possui histórico de pedidos no sistema.");
+            return "redirect:/clientes?error=Erro+ao+excluir+cliente";
         }
-        return "redirect:/clientes";
     }
 }
