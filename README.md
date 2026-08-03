@@ -73,6 +73,11 @@ docker-compose up -d    # sobe o MySQL na porta 3306 (na raiz do repositório)
 .\mvnw.cmd test
 ```
 
+A suíte inclui testes de:
+
+- **Transações ACID:** commit com dedução de estoque, rollback por estoque insuficiente e **concorrência** (2 checkouts simultâneos → somente 1 aprovado, estoque nunca negativo).
+- **Segurança/autorização:** acesso por papel às rotas (`/api/produtos`, `/api/pedidos`, páginas de admin), login JWT, validação de registro (senha forte) e **autorização das tools do Assistente IA** (`ROLE_ADMIN` vs `ROLE_USER`).
+
 ---
 
 ## 🏛️ Estrutura do Projeto

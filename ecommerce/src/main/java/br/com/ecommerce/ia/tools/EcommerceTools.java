@@ -153,12 +153,16 @@ public class EcommerceTools {
             return negarAcesso("Atualizar Status do Pedido");
         }
 
+        OrderStatus statusNovo;
         try {
-            OrderStatus statusNovo = OrderStatus.valueOf(novoStatus.toUpperCase().trim());
-            Pedido pedido = pedidoService.atualizarStatus(idPedido, statusNovo);
-            return String.format("Pedido #%d atualizado com sucesso para '%s'.", idPedido, pedido.getStatus());
+            statusNovo = OrderStatus.valueOf(novoStatus.toUpperCase().trim());
         } catch (IllegalArgumentException e) {
             return String.format("Erro: Status '%s' é inválido. Escolha um dos seguintes: PENDENTE, CONCLUIDO, CANCELADO.", novoStatus);
+        }
+
+        try {
+            Pedido pedido = pedidoService.atualizarStatus(idPedido, statusNovo);
+            return String.format("Pedido #%d atualizado com sucesso para '%s'.", idPedido, pedido.getStatus());
         } catch (Exception e) {
             return "Erro ao atualizar pedido #" + idPedido + ": " + e.getMessage();
         }
