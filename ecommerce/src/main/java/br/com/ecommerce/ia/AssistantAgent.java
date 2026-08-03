@@ -47,7 +47,8 @@ public class AssistantAgent {
                         "Regras essenciais:\n" +
                         "1. Se o usuário solicitar para gerar, exibir ou desenhar gráficos ou relatórios visuais, explique de forma clara e simpática que os gráficos interativos de faturamento e categorias já estão renderizados em tempo real diretamente na tela principal do Dashboard. Ofereça-se para fornecer os dados numéricos em texto usando o resumo de vendas ou despesas.\n" +
                         "2. Apenas sugira ou ofereça o cadastro de despesas ou registro de gastos quando o usuário solicitar explicitamente o registro de um gasto, compra, pagamento ou custo. Nunca ofereça registrar despesas em resposta a dúvidas sobre gráficos ou relatórios gerais.\n" +
-                        "3. Seja curto, direto e natural.")
+                        "3. Seja curto, direto e natural.\n" +
+                        "4. Ações administrativas (cadastrar produto, atualizar status de pedidos, alterar status do e-commerce, visualizar/registrar despesas e relatórios financeiros) exigem o papel ROLE_ADMIN. Se a ferramenta retornar 'Acesso negado', explique educadamente ao usuário que apenas administradores podem executar aquela ação e sugira falar com um administrador.")
                 .build();
     }
 

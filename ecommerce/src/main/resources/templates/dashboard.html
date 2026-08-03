@@ -15,7 +15,7 @@
       <div id="dashboard-content">
         <!-- CDNs adicionais e CSS específico da página -->
         <link rel="stylesheet" th:href="@{/css/dashboard.css}" />
-        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script th:src="@{/js/chart.umd.min.js}"></script>
 
         <!-- Cabeçalho do Dashboard -->
         <div class="page-header">
@@ -283,9 +283,12 @@
               </h4>
               <p>
                 Operações simultâneas de compra ocorrem de forma isolada sem
-                interferir umas nas outras. O Spring e o JPA gerenciam o nível
-                de isolamento de transações, impedindo leituras sujas de dados
-                parciais.
+                interferir umas nas outras. O checkout usa
+                <strong>bloqueio pessimista</strong>
+                (<code>SELECT ... FOR UPDATE</code>): o segundo comprador
+                aguarda o primeiro concluir e só então enxerga o estoque
+                atualizado — impedindo <em>overselling</em> (vender além do
+                disponível).
               </p>
             </div>
 

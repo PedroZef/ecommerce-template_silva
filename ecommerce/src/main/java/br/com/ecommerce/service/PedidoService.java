@@ -80,8 +80,10 @@ public class PedidoService {
 
         // Processa cada item do pedido
         for (ItemPedido item : pedido.getItens()) {
-            // 1. Busca o produto
-            Produto produto = produtoRepository.findById(item.getProduto().getId())
+            // 1. Busca o produto com BLOQUEIO PESSIMISTA (SELECT ... FOR UPDATE)
+            //    Isso garante que dois checkouts simultâneos não leiam o mesmo
+            //    estoque, eliminando a condição de corrida (overselling).
+            Produto produto = produtoRepository.findByIdForUpdate(item.getProduto().getId())
                     .orElseThrow(() -> new IllegalArgumentException("Produto de ID " + item.getProduto().getId() + " não foi encontrado."));
 
             // 2. Registra o preço de compra histórico

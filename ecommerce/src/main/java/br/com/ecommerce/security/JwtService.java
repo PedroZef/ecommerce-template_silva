@@ -5,6 +5,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -19,11 +20,27 @@ import java.util.function.Function;
 @Service
 public class JwtService {
 
-    @Value("${jwt.secret}")
-    private String secretKey;
+    private static final String DEV_FALLBACK_SECRET =
+            "dGhpcy1pcy1hLXNlY3VyZS1rZXktZm9yLWp3dC1zaWduaW5nLXBsZWFzZS1jaGFuZ2UtaXQtaW4tcHJvZHVjdGlvbg==";
 
-    @Value("${jwt.expiration:86400000}") // 24 horas em milissegundos
-    private long jwtExpiration;
+    private final String secretKey;
+    private final long jwtExpiration;
+
+    public JwtService(
+            @Value("${jwt.secret}") String secretKey,
+            @Value("${jwt.expiration:86400000}") long jwtExpiration,
+            Environment environment
+    ) {
+        // Fail-fast: fora do perfil dev, o fallback padrão da chave NÃO pode ser usado.
+        // Se JWT_SECRET não for fornecida no ambiente, a aplicação nem deve subir.
+        if (DEV_FALLBACK_SECRET.equals(secretKey) && !environment.matchesProfiles("dev")) {
+            throw new IllegalStateException(
+                    "JWT_SECRET não configurada no ambiente! Defina a variável de ambiente JWT_SECRET "
+                            + "(Base64 com no mínimo 256 bits) antes de iniciar a aplicação fora do perfil 'dev'.");
+        }
+        this.secretKey = secretKey;
+        this.jwtExpiration = jwtExpiration;
+    }
 
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);

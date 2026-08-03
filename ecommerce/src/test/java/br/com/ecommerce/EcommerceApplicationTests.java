@@ -20,6 +20,11 @@ import br.com.ecommerce.service.PedidoService;
 
 import java.math.BigDecimal;
 import java.util.Optional;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import static org.junit.jupiter.api.Assertions.*;
 
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
@@ -152,6 +157,83 @@ class EcommerceApplicationTests {
 		long totalPedidosDepois = pedidoRepository.count();
 		assertEquals(totalPedidosAntes, totalPedidosAfter(totalPedidosDepois),
 				"A tabela de pedidos não deve conter novos registros.");
+	}
+
+	@Test
+	void testCheckoutsConcorrentes_NaoPermitemEstoqueNegativo() throws Exception {
+		// 1. Arrange (Preparar)
+		Categoria categoria = new Categoria();
+		categoria.setNome("Testes Concorrencia");
+		categoria = categoriaRepository.save(categoria);
+
+		Produto produtoSalvo = produtoRepository.save(criarProduto("Fone de Teste Concorrencia",
+				"Fone usado para testar concorrencia", new BigDecimal("99.90"), 10, categoria));
+
+		Cliente cliente = new Cliente();
+		cliente.setNome("Comprador Concorrente");
+		cliente.setEmail("concorrente.teste@email.com");
+		cliente.setCpf("999.888.777-66");
+		clienteRepository.save(cliente);
+
+		long totalPedidosAntes = pedidoRepository.count();
+
+		// 2. Dois checkouts simultâneos pedindo 7 unidades cada (estoque total = 10).
+		//    Somente UM pode ser aprovado; o outro deve receber EstoqueInsuficiente.
+		int solicitado = 7;
+		int threads = 2;
+		CountDownLatch inicio = new CountDownLatch(1);
+		CountDownLatch fim = new CountDownLatch(threads);
+		AtomicReference<Throwable> erroInesperado = new AtomicReference<>();
+
+		ExecutorService executor = Executors.newFixedThreadPool(threads);
+		for (int i = 0; i < threads; i++) {
+			executor.submit(() -> {
+				try {
+					inicio.await();
+					Pedido pedido = new Pedido();
+					pedido.setCliente(cliente);
+					ItemPedido item = new ItemPedido();
+					item.setProduto(produtoSalvo);
+					item.setQuantidade(solicitado);
+					item.setPrecoUnitario(produtoSalvo.getPreco());
+					pedido.adicionarItem(item);
+					pedidoService.criarPedido(pedido);
+				} catch (EstoqueInsuficienteException e) {
+					// Esperado para pelo menos uma das transações concorrentes.
+				} catch (Throwable t) {
+					erroInesperado.set(t);
+				} finally {
+					fim.countDown();
+				}
+			});
+		}
+
+		// 3. Act (disparar os dois checkouts ao mesmo tempo)
+		inicio.countDown();
+		assertTrue(fim.await(60, TimeUnit.SECONDS), "As transações concorrentes deveriam ter terminado em 60s.");
+		executor.shutdown();
+
+		// 4. Assert (Verificar)
+		assertNull(erroInesperado.get(), "Nenhum erro inesperado deveria ocorrer: " + erroInesperado.get());
+
+		Produto atualizado = produtoRepository.findById(produtoSalvo.getId()).orElseThrow();
+		assertTrue(atualizado.getEstoque() >= 0, "O estoque nunca pode ficar negativo!");
+		assertEquals(3, atualizado.getEstoque(),
+				"Deveriam restar 3 unidades (10 - 7 do único pedido aprovado).");
+
+		long pedidosAprovados = pedidoRepository.count() - totalPedidosAntes;
+		assertEquals(1, pedidosAprovados,
+				"Somente um dos dois checkouts concorrentes deveria ser aprovado (sem overselling).");
+	}
+
+	private Produto criarProduto(String nome, String descricao, BigDecimal preco, int estoque, Categoria categoria) {
+		Produto produto = new Produto();
+		produto.setNome(nome);
+		produto.setDescricao(descricao);
+		produto.setPreco(preco);
+		produto.setEstoque(estoque);
+		produto.setCategoria(categoria);
+		return produto;
 	}
 
 	@Test

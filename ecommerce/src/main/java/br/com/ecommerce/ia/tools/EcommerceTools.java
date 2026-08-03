@@ -31,13 +31,31 @@ public class EcommerceTools {
         this.despesaRepository = despesaRepository;
     }
 
+    private static final String ROLE_ADMIN = "ROLE_ADMIN";
+
     private String getUsuarioLogado() {
         var auth = SecurityContextHolder.getContext().getAuthentication();
         return (auth != null) ? auth.getName() : "anonymousUser";
     }
 
-    @Tool(description = "Registra um novo produto no e-commerce. Se a categoria não existir, ela será criada automaticamente.")
+    private boolean isAdmin() {
+        var auth = SecurityContextHolder.getContext().getAuthentication();
+        return auth != null && auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals(ROLE_ADMIN));
+    }
+
+    private String negarAcesso(String acao) {
+        return "Acesso negado: a ação '" + acao
+                + "' exige privilégios de administrador (ROLE_ADMIN). Seu usuário é '" + getUsuarioLogado()
+                + "'. Consulte um administrador ou solicite a ele que execute a operação.";
+    }
+
+    @Tool(description = "Registra um novo produto no e-commerce. Se a categoria não existir, ela será criada automaticamente. Apenas administradores (ROLE_ADMIN) podem executar.")
     public String cadastrarProduto(String nome, String descricao, BigDecimal preco, Integer estoque, String nomeCategoria) {
+        if (!isAdmin()) {
+            return negarAcesso("Cadastrar Produto");
+        }
+
         String usuario = getUsuarioLogado();
         
         Optional<Categoria> categoriaOpt = categoriaRepository.findByNome(nomeCategoria);
@@ -62,11 +80,9 @@ public class EcommerceTools {
                 salvo.getNome(), salvo.getId(), categoria.getNome(), usuario, salvo.getPreco(), salvo.getEstoque());
     }
 
-    @Tool(description = "Busca detalhes de um produto pelo nome (preço, estoque, descrição e categoria).")
+    @Tool(description = "Busca detalhes de um produto pelo nome (preço, estoque, descrição e categoria). Disponível para qualquer usuário autenticado.")
     public String obterEstoqueEPrecoProduto(String nomeProduto) {
-        List<Produto> produtos = produtoRepository.findAll().stream()
-                .filter(p -> p.getNome().toLowerCase().contains(nomeProduto.toLowerCase()))
-                .collect(Collectors.toList());
+        List<Produto> produtos = produtoRepository.findByNomeContainingIgnoreCase(nomeProduto);
 
         if (produtos.isEmpty()) {
             return "Nenhum produto encontrado com o nome '" + nomeProduto + "'.";
@@ -81,7 +97,7 @@ public class EcommerceTools {
         return sb.toString();
     }
 
-    @Tool(description = "Lista todos os produtos de uma determinada categoria.")
+    @Tool(description = "Lista todos os produtos de uma determinada categoria. Disponível para qualquer usuário autenticado.")
     public String listarProdutosPorCategoria(String nomeCategoria) {
         Optional<Categoria> categoriaOpt = categoriaRepository.findByNome(nomeCategoria);
         if (categoriaOpt.isEmpty()) {
@@ -101,8 +117,12 @@ public class EcommerceTools {
         return sb.toString();
     }
 
-    @Tool(description = "Retorna um resumo geral de vendas, faturamento total e informações sobre os últimos 5 pedidos do e-commerce. Parâmetro 'justificativa' deve ser uma explicação curta.")
+    @Tool(description = "Retorna um resumo geral de vendas, faturamento total e informações sobre os últimos 5 pedidos do e-commerce. Parâmetro 'justificativa' deve ser uma explicação curta. Apenas administradores (ROLE_ADMIN) podem executar.")
     public String obterResumoVendas(String justificativa) {
+        if (!isAdmin()) {
+            return negarAcesso("Resumo de Vendas / Faturamento");
+        }
+
         long totalPedidos = pedidoService.contarTodos();
         BigDecimal faturamento = pedidoService.calcularFaturamentoTotal();
         List<Pedido> pedidos = pedidoService.listarTodos();
@@ -127,8 +147,12 @@ public class EcommerceTools {
         return sb.toString();
     }
 
-    @Tool(description = "Atualiza o status de um pedido específico. Parâmetros: idPedido (Long) e novoStatus (PENDENTE, CONCLUIDO ou CANCELADO).")
+    @Tool(description = "Atualiza o status de um pedido específico. Parâmetros: idPedido (Long) e novoStatus (PENDENTE, CONCLUIDO ou CANCELADO). Apenas administradores (ROLE_ADMIN) podem executar.")
     public String atualizarStatusPedido(Long idPedido, String novoStatus) {
+        if (!isAdmin()) {
+            return negarAcesso("Atualizar Status do Pedido");
+        }
+
         try {
             OrderStatus statusNovo = OrderStatus.valueOf(novoStatus.toUpperCase().trim());
             Pedido pedido = pedidoService.atualizarStatus(idPedido, statusNovo);
@@ -140,16 +164,24 @@ public class EcommerceTools {
         }
     }
 
-    @Tool(description = "Registra um novo gasto pessoal ou despesa. Categorias recomendadas: Supermercado, Farmácia, Outros.")
+    @Tool(description = "Registra um novo gasto pessoal ou despesa. Categorias recomendadas: Supermercado, Farmácia, Outros. Apenas administradores (ROLE_ADMIN) podem executar.")
     public String cadastrarDespesa(String descricao, BigDecimal valor, String categoria) {
+        if (!isAdmin()) {
+            return negarAcesso("Cadastrar Despesa");
+        }
+
         Despesa despesa = new Despesa(descricao, valor, categoria.trim());
         Despesa salva = despesaRepository.save(despesa);
         return String.format("Sucesso: Despesa '%s' de R$ %.2f cadastrada na categoria '%s'. (ID: %d)",
                 salva.getDescricao(), salva.getValor(), salva.getCategoria(), salva.getId());
     }
 
-    @Tool(description = "Lista todos os gastos cadastrados, com opção de filtrar por categoria (Supermercado, Farmácia, etc.) e mostra o total acumulado.")
+    @Tool(description = "Lista todos os gastos cadastrados, com opção de filtrar por categoria (Supermercado, Farmácia, etc.) e mostra o total acumulado. Apenas administradores (ROLE_ADMIN) podem executar.")
     public String obterRelatorioDespesas(String categoriaFiltro) {
+        if (!isAdmin()) {
+            return negarAcesso("Relatório de Despesas");
+        }
+
         List<Despesa> despesas;
         if (categoriaFiltro != null && !categoriaFiltro.trim().isEmpty() && !categoriaFiltro.equalsIgnoreCase("todas")) {
             despesas = despesaRepository.findByCategoriaIgnoreCase(categoriaFiltro.trim());

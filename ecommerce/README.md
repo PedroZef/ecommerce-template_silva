@@ -58,6 +58,21 @@ O sistema conta com um assistente virtual capaz de interpretar comandos em lingu
 
 * **Fallback Local Resiliente**: Se a API da LLM estiver indisponível ou a chave de API Groq (`GROQ_API_KEY`) for inválida, o assistente ativa um mecanismo de correspondência local por expressões regulares (regex) contido em `ia/AssistantAgent.java` para processar intenções básicas como cadastrar produtos ou consultar faturamento sem interromper o serviço.
 
+* **Autorização por Papel (ROLE_ADMIN)**: Cada tool registrada em `ia/tools/EcommerceTools.java` consulta o `SecurityContext` antes de executar. Consultas de catálogo (preço/estoque e produtos por categoria) são liberadas a qualquer usuário autenticado, mas ações administrativas — cadastro de produto, atualização de status de pedido, resumo de vendas/faturamento, cadastro e relatório de despesas — **exigem `ROLE_ADMIN`** e retornam mensagem amigável de acesso negado para usuários comuns. A proteção cobre tanto o fluxo com LLM quanto o fallback offline, pois ambos chamam as mesmas tools.
+
+### 🔑 Credenciais de Demonstração (apenas perfil `dev`)
+
+O `DataLoader` (`config/DataLoader.java`) é exclusivo do profile `dev` (`@Profile("dev")`), ou seja, **nunca executa em produção**:
+
+| Perfil | Usuário | Senha | Papel |
+|---|---|---|---|
+| dev | `admin@admin.com` | `admin123` | `ROLE_ADMIN` |
+| dev | `maria.silva@email.com` | `cliente123` | `ROLE_USER` |
+| dev | `joao.oliveira@email.com` | `cliente123` | `ROLE_USER` |
+| dev | `ana.souza@email.com` | `cliente123` | `ROLE_USER` |
+
+Em produção, crie os usuários administrativos manualmente (via SQL/migration própria) e defina obrigatoriamente `JWT_SECRET`.
+
 ---
 
 ## 🛠️ Como Executar o Projeto

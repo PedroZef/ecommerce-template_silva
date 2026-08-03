@@ -30,8 +30,13 @@ public class ThemeController {
 
         response.addCookie(cookie);
 
-        // Retorna o usuário exatamente para a página de onde ele clicou
+        // Retorna o usuário exatamente para a página de onde ele clicou,
+        // mas somente para URLs relativas de mesma origem (evita open-redirect).
         String referer = request.getHeader("Referer");
-        return "redirect:" + (referer != null ? referer : "/");
+        String destino = "/";
+        if (referer != null && referer.startsWith("/") && !referer.startsWith("//")) {
+            destino = referer;
+        }
+        return "redirect:" + destino;
     }
 }

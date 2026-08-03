@@ -61,6 +61,22 @@ function selectPaymentMethod(method) {
   }
 }
 
+// Bloqueia o envio duplicado do formulário (evita pedidos duplicados por
+// clique duplo no botão "Finalizar Checkout").
+document.addEventListener("DOMContentLoaded", () => {
+  const checkoutForm = document.querySelector('form[action*="checkout/comprar"]');
+  if (checkoutForm) {
+    checkoutForm.addEventListener("submit", () => {
+      const submitBtn = checkoutForm.querySelector('button[type="submit"]');
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.classList.add("disabled");
+        submitBtn.innerHTML = "Processando transação...";
+      }
+    });
+  }
+});
+
 // Format card fields and update virtual widget dynamically
 document.addEventListener("DOMContentLoaded", () => {
   const numCartao = document.getElementById("numCartao");

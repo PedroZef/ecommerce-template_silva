@@ -3,7 +3,10 @@ package br.com.ecommerce.config;
 import java.math.BigDecimal;
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
@@ -18,8 +21,11 @@ import br.com.ecommerce.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 
 @Component
+@Profile("dev")
 @RequiredArgsConstructor
 public class DataLoader implements CommandLineRunner {
+
+    private static final Logger log = LoggerFactory.getLogger(DataLoader.class);
 
     private final CategoriaRepository categoriaRepository;
     private final ProdutoRepository produtoRepository;
@@ -29,7 +35,7 @@ public class DataLoader implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        System.out.println("====== INICIANDO POPULAÇÃO COM DADOS INICIAIS PARA O BANCO DE DADOS ======");
+        log.info("====== INICIANDO POPULAÇÃO COM DADOS INICIAIS PARA O BANCO DE DADOS (apenas profile dev) ======");
 
         // 1. Criar usuários do sistema de forma segura
         criarUsuarioSeNaoExistir("admin@admin.com", "admin123", "ROLE_ADMIN");
@@ -66,7 +72,7 @@ public class DataLoader implements CommandLineRunner {
                 "Experimente o carregamento ultrarrápido com um SSD de velocidade incrível.", new BigDecimal("4499.00"),
                 3, games);
 
-        System.out.println("====== BANCO DE DADOS ATUALIZADO COM SUCESSO ======");
+        log.info("====== BANCO DE DADOS ATUALIZADO COM SUCESSO ======");
     }
 
     private void criarUsuarioSeNaoExistir(String email, String senha, String role) {
@@ -77,7 +83,7 @@ public class DataLoader implements CommandLineRunner {
             usuario.setSenha(passwordEncoder.encode(senha));
             usuario.setRole(role);
             usuarioRepository.save(usuario);
-            System.out.println("Usuário criado: " + email);
+            log.info("Usuário criado: {}", email);
         }
     }
 
@@ -86,7 +92,7 @@ public class DataLoader implements CommandLineRunner {
             Categoria categoria = new Categoria();
             categoria.setNome(nome);
             Categoria salva = categoriaRepository.save(categoria);
-            System.out.println("Categoria criada: " + nome);
+            log.info("Categoria criada: {}", nome);
             return salva;
         });
     }
@@ -100,7 +106,7 @@ public class DataLoader implements CommandLineRunner {
             cliente.setCpf(cpf);
             usuarioRepository.findByEmail(email).ifPresent(cliente::setUsuario);
             clienteRepository.save(cliente);
-            System.out.println("Cliente criado: " + nome + " (" + email + ")");
+            log.info("Cliente criado: {} ({})", nome, email);
         }
     }
 
@@ -108,9 +114,7 @@ public class DataLoader implements CommandLineRunner {
             Categoria categoria) {
         if (categoria == null)
             return;
-        boolean existe = produtoRepository.findAll().stream()
-                .anyMatch(p -> p.getNome().equalsIgnoreCase(nome));
-        if (!existe) {
+        if (!produtoRepository.existsByNomeIgnoreCase(nome)) {
             Produto produto = new Produto();
             produto.setNome(nome);
             produto.setDescricao(descricao);
@@ -118,7 +122,7 @@ public class DataLoader implements CommandLineRunner {
             produto.setEstoque(estoque);
             produto.setCategoria(categoria);
             produtoRepository.save(produto);
-            System.out.println("Produto criado: " + nome);
+            log.info("Produto criado: {}", nome);
         }
     }
 }
