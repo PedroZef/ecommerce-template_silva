@@ -154,6 +154,14 @@ class SecurityAuthorizationApplicationTests {
 			.andExpect(jsonPath("$.token").isNotEmpty());
 	}
 
+	@Test
+	void loginComCredenciaisInvalidas_DeveRetornar401() throws Exception {
+		mockMvc.perform(post("/api/auth/login")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{\"username\":\"admin@admin.com\",\"password\":\"senha-errada\"}"))
+			.andExpect(status().isUnauthorized());
+	}
+
 	// =====================================================================
 	// Autorização das TOOLS do Assistente IA
 	// =====================================================================
