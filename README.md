@@ -162,3 +162,13 @@ O método `criarPedido()` em `service/PedidoService.java` é `@Transactional`:
 Se **qualquer** item exceder o estoque, uma `EstoqueInsuficienteException` (runtime) dispara o **rollback total** — nada é gravado e os estoques parciais voltam ao valor original. Esse comportamento é coberto por testes de integração (`src/test/.../EcommerceApplicationTests.java`).
 
 > 🔒 **Isolamento contra concorrência:** a leitura do produto em `criarPedido()` usa **`PESSIMISTIC_WRITE`** (`SELECT ... FOR UPDATE` via `ProdutoRepository.findByIdForUpdate`). Dois checkouts simultâneos ficam serializados no banco: o segundo só enxerga o estoque **após** o commit do primeiro, eliminando a condição de corrida (*overselling*). Um teste dedicado dispara 2 checkouts concorrentes com estoque insuficiente para ambos e valida que **apenas 1 pedido é aprovado** e o estoque nunca fica negativo.
+
+---
+
+## 🕸️ Grafo de Conhecimento
+
+Mapa de arquitetura gerado automaticamente com [graphify](https://github.com/safishamsi/graphify) — 520 nós, 1322 arestas e 24 comunidades (controllers, serviços, entidades, segurança JWT, assistente IA e páginas). Cores = comunidades, tamanho = número de conexões:
+
+![Grafo de Conhecimento](docs/graph.png)
+
+> Para regenerar: `graphify .` na pasta `ecommerce/` (o `.graphifyignore` exclui `chart.umd.min.js`; a saída fica em `ecommerce/graphify-out/`, ignorada pelo Git).
