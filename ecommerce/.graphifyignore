@@ -1,0 +1,3 @@
+# Exclude vendored/minified libraries - they pollute the graph
+
+src/main/resources/static/js/chart.umd.min.js

@@ -106,13 +106,13 @@ ecommerce/
 
 ## ✨ Funcionalidades
 
-| Área | Descrição |
-|---|---|
-| **Páginas Web (MVC)** | Login, Dashboard (métricas + gráficos Chart.js), CRUD de Produtos/Categorias/Clientes, Simulador ACID (checkout) e Histórico de Pedidos. |
-| **API REST** | `/api/auth/**` (login/registro JWT), `/api/produtos` (público leitura / ADMIN escrita), `/api/pedidos` (ADMIN), `/api/assistant/**` (autenticado). |
-| **Transações ACID** | Checkout atômico: valida estoque, deduz estoque e grava pedido na mesma transação com rollback automático em caso de falha. |
-| **Assistente IA** | Comandos por **texto** (OpenRouter/Gemini) e **voz** (Groq/Whisper), com **fallback offline** por expressões regulares. |
-| **Segurança** | Spring Security (sessão nas páginas + JWT na API), BCrypt, CSRF nas páginas, validações Bean Validation, segredos via `.env`. |
+| Área                        | Descrição                                                                                                                                                 |
+| ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Páginas Web (MVC)** | Login, Dashboard (métricas + gráficos Chart.js), CRUD de Produtos/Categorias/Clientes, Simulador ACID (checkout) e Histórico de Pedidos.                 |
+| **API REST**           | `/api/auth/**` (login/registro JWT), `/api/produtos` (público leitura / ADMIN escrita), `/api/pedidos` (ADMIN), `/api/assistant/**` (autenticado). |
+| **Transações ACID**  | Checkout atômico: valida estoque, deduz estoque e grava pedido na mesma transação com rollback automático em caso de falha.                             |
+| **Assistente IA**      | Comandos por**texto** (OpenRouter/Gemini) e **voz** (Groq/Whisper), com **fallback offline** por expressões regulares.                   |
+| **Segurança**         | Spring Security (sessão nas páginas + JWT na API), BCrypt, CSRF nas páginas, validações Bean Validation, segredos via`.env`.                         |
 
 ---
 
@@ -120,15 +120,15 @@ ecommerce/
 
 As ferramentas (tools) do assistente consultam o **papel do usuário autenticado** antes de executar. Comandos administrativos são **negados com mensagem amigável** para usuários comuns (`ROLE_USER`):
 
-| Tool do Assistente | Ação | Permissão |
-|---|---|---|
-| `obterEstoqueEPrecoProduto` | Consultar preço/estoque de produto | ✅ Qualquer usuário autenticado |
-| `listarProdutosPorCategoria` | Listar produtos de uma categoria | ✅ Qualquer usuário autenticado |
-| `cadastrarProduto` | Criar produto (e categoria, se preciso) | 🔒 Somente `ROLE_ADMIN` |
-| `atualizarStatusPedido` | Alterar status de um pedido | 🔒 Somente `ROLE_ADMIN` |
-| `obterResumoVendas` | Faturamento e resumo de vendas | 🔒 Somente `ROLE_ADMIN` |
-| `cadastrarDespesa` | Registrar despesa/gasto | 🔒 Somente `ROLE_ADMIN` |
-| `obterRelatorioDespesas` | Relatório de despesas | 🔒 Somente `ROLE_ADMIN` |
+| Tool do Assistente             | Ação                                  | Permissão                       |
+| ------------------------------ | --------------------------------------- | -------------------------------- |
+| `obterEstoqueEPrecoProduto`  | Consultar preço/estoque de produto     | ✅ Qualquer usuário autenticado |
+| `listarProdutosPorCategoria` | Listar produtos de uma categoria        | ✅ Qualquer usuário autenticado |
+| `cadastrarProduto`           | Criar produto (e categoria, se preciso) | 🔒 Somente`ROLE_ADMIN`         |
+| `atualizarStatusPedido`      | Alterar status de um pedido             | 🔒 Somente`ROLE_ADMIN`         |
+| `obterResumoVendas`          | Faturamento e resumo de vendas          | 🔒 Somente`ROLE_ADMIN`         |
+| `cadastrarDespesa`           | Registrar despesa/gasto                 | 🔒 Somente`ROLE_ADMIN`         |
+| `obterRelatorioDespesas`     | Relatório de despesas                  | 🔒 Somente`ROLE_ADMIN`         |
 
 **Como funciona:** a verificação é feita dentro de `ia/tools/EcommerceTools.java` via `SecurityContextHolder` (o mesmo contexto de autenticação da requisição HTTP). A proteção vale tanto para o fluxo com LLM quanto para o **fallback offline** (`ia/AssistantAgent.java`), que chama as mesmas tools. O prompt de sistema do assistente também orienta o modelo a explicar a negativa educadamente.
 
